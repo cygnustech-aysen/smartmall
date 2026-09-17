@@ -100,15 +100,18 @@
             <button onclick="aplicarCuponBienvenidaBanner()" class="bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs shadow">Usar Cupón</button>
         </section>
 
-        <!-- SECCIÓN DE PLANES Y SUSCRIPCIONES -->
+        <!-- SECCIÓN DE PLANES Y SUSCRIPCIONES (VISIBLE EN EL HOME / VISTA DEDICADA) -->
         <div id="vista-planes-suscripcion" class="hidden bg-white rounded-2xl shadow-md p-8 mb-8 border border-amber-200">
-            <div class="text-center max-w-2xl mx-auto mb-8">
-                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Membresías para Tiendas</span>
-                <h2 class="text-3xl font-black text-slate-900 mt-2">Elige tu Plan de Creador</h2>
-                <p class="text-sm text-gray-600 mt-1">Potencia tu comercio digital en la red nacional de SmartMall Chile.</p>
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <div>
+                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Membresías para Tiendas</span>
+                    <h2 class="text-3xl font-black text-slate-900 mt-2">Nuestros Planes de Creador</h2>
+                    <p class="text-sm text-gray-600 mt-1">Potencia tu comercio digital en la red nacional de SmartMall Chile.</p>
+                </div>
+                <button onclick="irAInicio()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold">Volver al Catálogo</button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto py-4">
                 <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 flex flex-col justify-between hover:border-amber-400 transition shadow-sm">
                     <div>
                         <div class="flex justify-between items-center mb-4">
@@ -152,7 +155,9 @@
                     <p class="text-xs text-gray-500">Administra productos, stock, boletas y abre tickets de asistencia técnica.</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span id="creator-plan-badge" class="bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1 rounded-lg text-xs font-extrabold">Plan: --</span>
+                    <button onclick="mostrarPlanesSuscripcion()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3 py-1.5 rounded-lg text-xs font-extrabold transition">
+                        <i class="fa-solid fa-crown mr-1"></i> <span id="creator-plan-badge">Plan: --</span> (Cambiar)
+                    </button>
                     <div class="bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 flex items-center gap-2">
                         <i class="fa-solid fa-shield-check"></i> Tienda Verificada
                     </div>
@@ -249,7 +254,7 @@
             <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
                 <div>
                     <h2 class="text-xl font-bold"><i class="fa-solid fa-gauge-high text-blue-400"></i> Panel de Administración General</h2>
-                    <p class="text-xs text-slate-400">Supervisión, GMV, control de tiendas y gestión de tickets de creadores.</p>
+                    <p class="text-xs text-slate-400">Supervisión, GMV, control de tiendas, gestión de usuarios y tickets de creadores.</p>
                 </div>
                 <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">SuperAdmin</span>
             </div>
@@ -258,6 +263,33 @@
                 <div class="bg-slate-800 p-4 rounded-xl border border-slate-700"><span class="text-xs text-slate-400">Tiendas Activas</span><p id="admin-count-tiendas" class="text-2xl font-black text-amber-400">0</p></div>
                 <div class="bg-slate-800 p-4 rounded-xl border border-slate-700"><span class="text-xs text-slate-400">Ciudades en Red</span><p id="admin-count-ciudades" class="text-2xl font-black text-emerald-400">0</p></div>
                 <div class="bg-slate-800 p-4 rounded-xl border border-slate-700"><span class="text-xs text-slate-400">GMV (Ventas Totales)</span><p id="admin-count-gmv" class="text-2xl font-black text-blue-400">$0 CLP</p></div>
+            </div>
+
+            <!-- GESTIÓN DE USUARIOS INSCRITOS -->
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-6">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                    <h3 class="font-bold text-sm text-amber-300"><i class="fa-solid fa-users-gear"></i> Gestión y Control de Usuarios Inscritos</h3>
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="admin-buscador-usuarios" oninput="filtrarUsuariosAdmin()" placeholder="Buscar usuario por nombre o email..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-amber-400">
+                        <i class="fa-solid fa-search absolute right-3 top-2 text-gray-400 text-xs"></i>
+                    </div>
+                </div>
+                <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-900 text-gray-400 border-b border-slate-700">
+                                <th class="p-2.5">Nombre</th>
+                                <th class="p-2.5">Correo</th>
+                                <th class="p-2.5">Rol</th>
+                                <th class="p-2.5">Estado</th>
+                                <th class="p-2.5 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-table-body" class="divide-y divide-slate-700/50">
+                            <!-- Inyectado dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -295,6 +327,33 @@
 
         <!-- VISTA DETALLE DE PRODUCTO Y PREGUNTAS Q&A -->
         <div id="vista-detalle-producto" class="hidden bg-white rounded-2xl shadow-sm border p-6 mb-8"></div>
+
+        <!-- BANNER / SECCIÓN DE PLANES PÚBLICOS EN EL HOME -->
+        <section class="my-12 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-8 shadow-xl border border-amber-500/30">
+            <div class="text-center max-w-xl mx-auto mb-8">
+                <span class="bg-amber-400 text-slate-950 font-black text-xs uppercase px-3 py-1 rounded-full">¿Tienes un negocio?</span>
+                <h2 class="text-3xl font-black mt-2">Publica tu Tienda en SmartMall</h2>
+                <p class="text-xs text-gray-300 mt-1">Únete a la red nacional de comercio y gestiona tu inventario con herramientas profesionales.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 flex flex-col justify-between">
+                    <div>
+                        <h4 class="font-bold text-lg text-amber-400">Plan Emprendedor</h4>
+                        <p class="text-2xl font-black mt-2">$9.990 <span class="text-xs text-gray-400">/mes</span></p>
+                        <p class="text-xs text-gray-300 mt-2">Ideal para iniciar con 1 tienda y hasta 25 productos en la red.</p>
+                    </div>
+                    <button onclick="mostrarPlanesSuscripcion()" class="mt-6 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-xl text-xs">Ver Detalles</button>
+                </div>
+                <div class="bg-amber-500 text-slate-950 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <h4 class="font-bold text-lg">Plan Full Ilimitado</h4>
+                        <p class="text-2xl font-black mt-2">$24.990 <span class="text-xs text-slate-800">/mes</span></p>
+                        <p class="text-xs text-slate-900 mt-2 font-medium">Múltiples tiendas, inventario ilimitado y prioridad alta en búsquedas.</p>
+                    </div>
+                    <button onclick="mostrarPlanesSuscripcion()" class="mt-6 bg-slate-900 text-white font-bold py-2 rounded-xl text-xs">Suscribirme Ahora</button>
+                </div>
+            </div>
+        </section>
 
         <!-- CATÁLOGO GENERAL DE TIENDAS -->
         <div id="vista-catalogo">
@@ -338,7 +397,7 @@
                 <h3 id="auth-title" class="text-xl font-bold text-slate-900">Iniciar Sesión</h3>
             </div>
             
-            <!-- FORMULARIO LOGIN (CLIENTES / CREADORES / ADMIN) -->
+            <!-- FORMULARIO LOGIN -->
             <form id="form-login" onsubmit="procesarLogin(event)" class="space-y-3">
                 <div id="login-info-box" class="bg-amber-50 p-2.5 rounded-lg text-[11px] text-amber-900 text-center mb-2 border border-amber-200">
                     <b>Acceso Seguro SmartMall</b><br>
@@ -365,6 +424,42 @@
                 <div class="text-center pt-2">
                     <button type="button" onclick="cambiarModoAuth('login')" class="text-xs text-blue-600 hover:underline">¿Ya tienes cuenta? Inicia sesión</button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EDICIÓN DE USUARIO (ADMIN) -->
+    <div id="modal-editar-usuario" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
+            <button onclick="cerrarModalEditarUsuario()" class="absolute top-4 right-4 text-gray-400 hover:text-slate-700 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-xl font-bold text-slate-900 mb-4"><i class="fa-solid fa-user-pen text-amber-500"></i> Editar Datos de Usuario</h3>
+            <form id="form-editar-usuario" onsubmit="guardarEdicionUsuario(event)" class="space-y-3">
+                <input type="hidden" id="edit-user-original-email">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre Completo</label>
+                    <input type="text" id="edit-user-nombre" required class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Correo Electrónico</label>
+                    <input type="email" id="edit-user-email" required class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Rol</label>
+                    <select id="edit-user-rol" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
+                        <option value="cliente">Cliente</option>
+                        <option value="creador">Creador</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Estado</label>
+                    <select id="edit-user-estado" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                        <option value="Bloqueado">Bloqueado</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl text-sm shadow">Guardar Cambios</button>
             </form>
         </div>
     </div>
@@ -414,9 +509,10 @@
             'Santiago (Centro)', 'Providencia', 'Las Condes', 'Ñuñoa', 'Valparaíso', 'Viña del Mar', 'Concepción', 'Antofagasta', 'La Serena', 'Temuco', 'Puerto Montt', 'Rancagua'
         ];
 
-        let usuariosDB = [
-            { nombre: 'Administrador General', email: 'admin@smartmall.cl', password: '1234', rol: 'admin' },
-            { nombre: 'Moda Urbana Stgo', email: 'creador@smartmall.cl', password: '1234', rol: 'creador', plan: 'Full' }
+        let usuariosDB = JSON.parse(localStorage.getItem('smartmall_usuarios_inscritos')) || [
+            { nombre: 'Administrador General', email: 'admin@smartmall.cl', password: '1234', rol: 'admin', estado: 'Activo' },
+            { nombre: 'Moda Urbana Stgo', email: 'creador@smartmall.cl', password: '1234', rol: 'creador', plan: 'Full', estado: 'Activo' },
+            { nombre: 'Cristian Segovia', email: 'contacto.cygnustech@gmail.com', password: '1234', rol: 'cliente', estado: 'Activo' }
         ];
 
         let backendTiendasDB = [];
@@ -448,6 +544,7 @@
             localStorage.setItem('smartmall_pedidos', JSON.stringify(pedidosDB));
             localStorage.setItem('smartmall_ventas', JSON.stringify(ventasDB));
             localStorage.setItem('smartmall_tickets', JSON.stringify(ticketsDB));
+            localStorage.setItem('smartmall_usuarios_inscritos', JSON.stringify(usuariosDB));
         }
 
         function mostrarToast(mensaje, tipo = 'success') {
@@ -610,8 +707,7 @@
                             categoria: p.categoria,
                             enOferta: p.en_oferta,
                             descuento: p.descuento,
-                            imagen: p.imagen,
-                            preguntas: p.preguntas || []
+                            imagen: p.imagen
                         }))
                     }));
                 } else {
@@ -653,6 +749,7 @@
                 if(usuarioSesion && usuarioSesion.rol === 'admin') {
                     renderizarAdminStores();
                     renderizarAdminTickets();
+                    renderizarAdminUsuarios();
                 }
 
             } catch (err) {
@@ -698,13 +795,6 @@
             view.classList.remove('hidden');
 
             let pFinal = calcularPrecioFinal(p);
-            let preguntasHTML = (p.preguntas || []).map(q => `
-                <div class="bg-slate-50 p-3 rounded-xl border text-xs space-y-1">
-                    <p class="font-bold text-slate-800"><i class="fa-solid fa-circle-question text-blue-500"></i> ${q.pregunta}</p>
-                    <p class="text-gray-600 pl-4"><i class="fa-solid fa-reply text-emerald-600"></i> ${q.respuesta || 'Esperando respuesta...'}</p>
-                </div>
-            `).join('') || '<p class="text-gray-400 text-xs">No hay consultas todavía.</p>';
-
             view.innerHTML = `
                 <button onclick="irAInicio()" class="mb-6 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-arrow-left"></i> Volver</button>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -719,28 +809,7 @@
                         <button onclick="agregarAlCarrito(${p.id}, '${p.nombre}', ${pFinal}, '${t.nombre}', '${t.ownerEmail}')" class="bg-amber-500 text-slate-950 px-6 py-3 rounded-xl font-bold text-sm shadow">Agregar al Carrito</button>
                     </div>
                 </div>
-                <div class="mt-8 border-t pt-6">
-                    <h3 class="text-lg font-bold text-slate-900 mb-4">Preguntas sobre el Producto</h3>
-                    <div class="space-y-3 mb-6">${preguntasHTML}</div>
-                    <form onsubmit="enviarPreguntaProducto(event, ${t.id}, ${p.id})" class="bg-slate-50 p-4 rounded-xl border space-y-2">
-                        <input type="text" id="input-pregunta-cliente" placeholder="Escribe tu consulta..." required class="w-full bg-white border rounded p-2 text-xs">
-                        <button type="submit" class="bg-slate-900 text-white font-bold px-4 py-2 rounded text-xs">Enviar Consulta</button>
-                    </form>
-                </div>
             `;
-        }
-
-        function enviarPreguntaProducto(e, tiendaId, prodId) {
-            e.preventDefault();
-            let texto = document.getElementById('input-pregunta-cliente').value.trim();
-            if(!texto) return;
-            let t = backendTiendasDB.find(x => x.id === tiendaId);
-            let p = t.productos.find(x => x.id === prodId);
-            if(!p.preguntas) p.preguntas = [];
-            p.preguntas.push({ pregunta: texto, respuesta: '' });
-            persistirDB();
-            mostrarToast('Consulta enviada con éxito.');
-            verDetalleProducto(tiendaId, prodId);
         }
 
         function cerrarProductos() {
@@ -758,39 +827,38 @@
             if(usuarioSesion && usuarioSesion.rol === 'admin') document.getElementById('admin-dashboard').classList.remove('hidden');
         }
 
-function abrirModalAuth(tipo) {
-    document.getElementById('auth-modal').classList.remove('hidden');
-    const infoBox = document.getElementById('login-info-box');
-    const linkRegistroDiv = document.getElementById('div-link-registro');
-    
-    if(tipo === 'cliente') {
-        document.getElementById('auth-title').innerText = 'Ingreso de Clientes';
-        infoBox.innerHTML = 'Accede para gestionar tus compras y boletas.';
-        document.getElementById('form-login').classList.remove('hidden');
-        document.getElementById('form-registro').classList.add('hidden');
-        linkRegistroDiv.innerHTML = '<button type="button" onclick="cambiarModoAuth(\'registro\')" class="text-xs text-blue-600 hover:underline">¿No tienes cuenta de cliente? Regístrate aquí</button>';
-        linkRegistroDiv.classList.remove('hidden');
-    } else if(tipo === 'creador') {
-        document.getElementById('auth-title').innerText = 'Acceso de Creadores y Tiendas';
-        infoBox.innerHTML = 'Ingresa con tu cuenta de creador para administrar tu inventario.';
-        document.getElementById('form-login').classList.remove('hidden');
-        document.getElementById('form-registro').classList.add('hidden');
-        // AQUÍ AGREGAMOS LA SUGERENCIA DE REGISTRO PARA CREADORES
-        linkRegistroDiv.innerHTML = '<button type="button" onclick="abrirModalAuth(\'registro\'); document.getElementById(\'reg-rol\').value=\'creador\';" class="text-xs text-amber-700 font-bold hover:underline">¿Quieres registrar tu tienda? Regístrate como Creador aquí</button>';
-        linkRegistroDiv.classList.remove('hidden');
-    } else if(tipo === 'admin') {
-        document.getElementById('auth-title').innerText = 'Acceso Restringido - Administrador';
-        infoBox.innerHTML = 'Panel exclusivo de supervisión general.';
-        document.getElementById('form-login').classList.remove('hidden');
-        document.getElementById('form-registro').classList.add('hidden');
-        linkRegistroDiv.classList.add('hidden');
-    } else {
-        document.getElementById('auth-title').innerText = 'Registro en SmartMall';
-        document.getElementById('form-login').classList.add('hidden');
-        document.getElementById('form-registro').classList.remove('hidden');
-        linkRegistroDiv.classList.add('hidden');
-    }
-}
+        function abrirModalAuth(tipo) {
+            document.getElementById('auth-modal').classList.remove('hidden');
+            const infoBox = document.getElementById('login-info-box');
+            const linkRegistroDiv = document.getElementById('div-link-registro');
+            
+            if(tipo === 'cliente') {
+                document.getElementById('auth-title').innerText = 'Ingreso de Clientes';
+                infoBox.innerHTML = 'Accede para gestionar tus compras y boletas.';
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-registro').classList.add('hidden');
+                linkRegistroDiv.innerHTML = '<button type="button" onclick="cambiarModoAuth(\'registro\')" class="text-xs text-blue-600 hover:underline">¿No tienes cuenta de cliente? Regístrate aquí</button>';
+                linkRegistroDiv.classList.remove('hidden');
+            } else if(tipo === 'creador') {
+                document.getElementById('auth-title').innerText = 'Acceso de Creadores y Tiendas';
+                infoBox.innerHTML = 'Ingresa con tu cuenta de creador para administrar tu inventario.';
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-registro').classList.add('hidden');
+                linkRegistroDiv.innerHTML = '<button type="button" onclick="abrirModalAuth(\'registro\'); document.getElementById(\'reg-rol\').value=\'creador\';" class="text-xs text-amber-700 font-bold hover:underline">¿Quieres registrar tu tienda? Regístrate como Creador aquí</button>';
+                linkRegistroDiv.classList.remove('hidden');
+            } else if(tipo === 'admin') {
+                document.getElementById('auth-title').innerText = 'Acceso Restringido - Administrador';
+                infoBox.innerHTML = 'Panel exclusivo de supervisión general.';
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-registro').classList.add('hidden');
+                linkRegistroDiv.classList.add('hidden');
+            } else {
+                document.getElementById('auth-title').innerText = 'Registro en SmartMall';
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-registro').classList.remove('hidden');
+                linkRegistroDiv.classList.add('hidden');
+            }
+        }
         function cerrarModalAuth() { document.getElementById('auth-modal').classList.add('hidden'); }
         function cambiarModoAuth(m) { abrirModalAuth(m); }
 
@@ -799,13 +867,17 @@ function abrirModalAuth(tipo) {
             let email = document.getElementById('login-email').value.trim();
             let pass = document.getElementById('login-password').value.trim();
 
-            let uDefault = usuariosDB.find(x => x.email === email && x.password === pass);
-            if(uDefault) {
-                usuarioSesion = { ...uDefault };
+            let uEncontrado = usuariosDB.find(x => x.email === email && x.password === pass);
+            if(uEncontrado) {
+                if(uEncontrado.estado === 'Bloqueado' || uEncontrado.estado === 'Inactivo') {
+                    mostrarToast(`Tu cuenta se encuentra en estado: ${uEncontrado.estado}. Contacta al administrador.`, 'error');
+                    return;
+                }
+                usuarioSesion = { ...uEncontrado };
                 localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
                 cerrarModalAuth();
                 aplicarEstadoSesion(usuarioSesion);
-                mostrarToast(`¡Bienvenido de nuevo, ${uDefault.nombre}!`);
+                mostrarToast(`¡Bienvenido de nuevo, ${uEncontrado.nombre}!`);
                 return;
             }
 
@@ -821,7 +893,8 @@ function abrirModalAuth(tipo) {
                     nombre: meta.nombre_completo || data.user.email,
                     email: data.user.email,
                     rol: meta.rol || 'cliente',
-                    plan: meta.plan || 'Emprendedor'
+                    plan: meta.plan || 'Emprendedor',
+                    estado: 'Activo'
                 };
                 localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
                 cerrarModalAuth();
@@ -839,7 +912,7 @@ function abrirModalAuth(tipo) {
             let rol = document.getElementById('reg-rol').value;
             let btn = document.getElementById('btn-submit-reg');
 
-            btn.innerText = 'Registrando en Supabase...';
+            btn.innerText = 'Registrando...';
             btn.disabled = true;
 
             try {
@@ -856,12 +929,18 @@ function abrirModalAuth(tipo) {
 
                 if (error) throw error;
 
+                // Registrar en la lista local de usuarios del Admin
+                if(!usuariosDB.some(u => u.email === email)) {
+                    usuariosDB.push({ nombre, email, password, rol, plan: 'Emprendedor', estado: 'Activo' });
+                    persistirDB();
+                }
+
                 cerrarModalAuth();
                 mostrarToast(`¡Registro exitoso! Se envió un correo de confirmación a ${email}.`);
                 document.getElementById('form-registro').reset();
 
                 if(rol === 'creador') {
-                    usuarioSesion = { nombre, email, rol: 'creador', plan: 'Emprendedor' };
+                    usuarioSesion = { nombre, email, rol: 'creador', plan: 'Emprendedor', estado: 'Activo' };
                     localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
                     aplicarEstadoSesion(usuarioSesion);
                     mostrarPlanesSuscripcion();
@@ -878,14 +957,18 @@ function abrirModalAuth(tipo) {
             document.getElementById('vista-catalogo').classList.add('hidden');
             document.getElementById('creator-dashboard').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.add('hidden');
+            document.getElementById('vista-detalle-producto').classList.add('hidden');
+            document.getElementById('vista-portal-cliente').classList.add('hidden');
             document.getElementById('vista-planes-suscripcion').classList.remove('hidden');
         }
 
         async function seleccionarPlanCreador(nombrePlan) {
             if(!usuarioSesion) return;
             usuarioSesion.plan = nombrePlan;
-            localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
+            let uLocal = usuariosDB.find(u => u.email === usuarioSesion.email);
+            if(uLocal) { uLocal.plan = nombrePlan; persistirDB(); }
             
+            localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
             try {
                 await supabase.auth.updateUser({ data: { plan: nombrePlan } });
             } catch(e) { console.error(e); }
@@ -926,6 +1009,7 @@ function abrirModalAuth(tipo) {
                 document.getElementById('admin-dashboard').classList.remove('hidden');
                 renderizarAdminStores();
                 renderizarAdminTickets();
+                renderizarAdminUsuarios();
             }
         }
 
@@ -980,40 +1064,40 @@ function abrirModalAuth(tipo) {
             if(chk) campos.classList.remove('hidden'); else campos.classList.add('hidden');
         }
 
-async function apiCrearProductoCreador(e) {
-    e.preventDefault();
-    let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
-    if(!tp) { 
-        mostrarToast('Primero debes guardar o registrar tu tienda en el formulario de la izquierda.', 'error'); 
-        return; 
-    }
+        async function apiCrearProductoCreador(e) {
+            e.preventDefault();
+            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
+            if(!tp) { 
+                mostrarToast('Primero debes guardar o registrar tu tienda en el formulario de la izquierda.', 'error'); 
+                return; 
+            }
 
-    let enOferta = document.getElementById('check-oferta').checked;
-    let nuevoProdDB = {
-        tienda_id: parseInt(tp.id),
-        nombre: document.getElementById('nombre-producto').value.trim(),
-        descripcion: document.getElementById('desc-producto').value.trim(),
-        precio: parseInt(document.getElementById('precio-producto').value),
-        stock: parseInt(document.getElementById('stock-producto').value),
-        categoria: document.getElementById('categoria-producto').value,
-        en_oferta: enOferta,
-        descuento: enOferta ? parseInt(document.getElementById('descuento-producto').value || 0) : 0,
-        imagen: document.getElementById('imagen-producto').value.trim()
-    };
+            let enOferta = document.getElementById('check-oferta').checked;
+            let nuevoProdDB = {
+                tienda_id: parseInt(tp.id),
+                nombre: document.getElementById('nombre-producto').value.trim(),
+                descripcion: document.getElementById('desc-producto').value.trim(),
+                precio: parseInt(document.getElementById('precio-producto').value),
+                stock: parseInt(document.getElementById('stock-producto').value),
+                categoria: document.getElementById('categoria-producto').value,
+                en_oferta: enOferta,
+                descuento: enOferta ? parseInt(document.getElementById('descuento-producto').value || 0) : 0,
+                imagen: document.getElementById('imagen-producto').value.trim()
+            };
 
-    let { error } = await supabase.from('productos').insert([nuevoProdDB]);
-    if(error) {
-        console.error("Error Supabase:", error.message);
-        mostrarToast('Error al publicar producto: ' + error.message, 'error');
-        return;
-    }
+            let { error } = await supabase.from('productos').insert([nuevoProdDB]);
+            if(error) {
+                console.error("Error Supabase:", error.message);
+                mostrarToast('Error al publicar producto: ' + error.message, 'error');
+                return;
+            }
 
-    await cargarTiendasDesdeAPI(); 
-    verificarTiendaCreador();
-    mostrarToast('¡Producto publicado con éxito!');
-    document.getElementById('form-crear-producto').reset();
-    document.getElementById('campos-oferta').classList.add('hidden');
-}
+            await cargarTiendasDesdeAPI(); 
+            verificarTiendaCreador();
+            mostrarToast('¡Producto publicado con éxito!');
+            document.getElementById('form-crear-producto').reset();
+            document.getElementById('campos-oferta').classList.add('hidden');
+        }
 
         async function eliminarProductoCreador(prodId) {
             let { error } = await supabase.from('productos').delete().eq('id', prodId);
@@ -1128,6 +1212,100 @@ async function apiCrearProductoCreador(e) {
                     </div>
                 </div>
             `).join('') : '<p class="text-gray-400">No hay tickets.</p>';
+        }
+
+        function renderizarAdminUsuarios(filtroQuery = '') {
+            let tbody = document.getElementById('admin-users-table-body');
+            if(!tbody) return;
+
+            let filtrados = usuariosDB.filter(u => 
+                u.nombre.toLowerCase().includes(filtroQuery.toLowerCase()) || 
+                u.email.toLowerCase().includes(filtroQuery.toLowerCase())
+            );
+
+            tbody.innerHTML = filtrados.length ? filtrados.map(u => `
+                <tr class="hover:bg-slate-700/50 transition">
+                    <td class="p-2.5 font-medium text-white">${u.nombre}</td>
+                    <td class="p-2.5 text-gray-300">${u.email}</td>
+                    <td class="p-2.5"><span class="bg-slate-700 text-amber-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold">${u.rol}</span></td>
+                    <td class="p-2.5">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.estado === 'Activo' ? 'bg-emerald-500 text-slate-950' : u.estado === 'Inactivo' ? 'bg-amber-500 text-slate-950' : 'bg-red-500 text-white'}">
+                            ${u.estado || 'Activo'}
+                        </span>
+                    </td>
+                    <td class="p-2.5 text-center space-x-1">
+                        <button onclick="abrirEditarUsuario('${u.email}')" title="Editar" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px]"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="toggleEstadoUsuario('${u.email}')" title="Bloquear/Activar" class="bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded text-[10px]"><i class="fa-solid fa-ban"></i></button>
+                        <button onclick="resetearClaveUsuario('${u.email}')" title="Reset Clave" class="bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-[10px]"><i class="fa-solid fa-key"></i></button>
+                        <button onclick="eliminarUsuario('${u.email}')" title="Eliminar" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-[10px]"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('') : `<tr><td colspan="5" class="text-center text-gray-400 py-4">No se encontraron usuarios.</td></tr>`;
+        }
+
+        function filtrarUsuariosAdmin() {
+            let query = document.getElementById('admin-buscador-usuarios').value;
+            renderizarAdminUsuarios(query);
+        }
+
+        function abrirEditarUsuario(email) {
+            let u = usuariosDB.find(x => x.email === email);
+            if(!u) return;
+            document.getElementById('edit-user-original-email').value = u.email;
+            document.getElementById('edit-user-nombre').value = u.nombre;
+            document.getElementById('edit-user-email').value = u.email;
+            document.getElementById('edit-user-rol').value = u.rol;
+            document.getElementById('edit-user-estado').value = u.estado || 'Activo';
+            document.getElementById('modal-editar-usuario').classList.remove('hidden');
+        }
+
+        function cerrarModalEditarUsuario() {
+            document.getElementById('modal-editar-usuario').classList.add('hidden');
+        }
+
+        function guardarEdicionUsuario(e) {
+            e.preventDefault();
+            let originalEmail = document.getElementById('edit-user-original-email').value;
+            let u = usuariosDB.find(x => x.email === originalEmail);
+            if(u) {
+                u.nombre = document.getElementById('edit-user-nombre').value.trim();
+                u.email = document.getElementById('edit-user-email').value.trim();
+                u.rol = document.getElementById('edit-user-rol').value;
+                u.estado = document.getElementById('edit-user-estado').value;
+                persistirDB();
+                renderizarAdminUsuarios();
+                cerrarModalEditarUsuario();
+                mostrarToast('Usuario actualizado con éxito.');
+            }
+        }
+
+        function toggleEstadoUsuario(email) {
+            let u = usuariosDB.find(x => x.email === email);
+            if(u) {
+                if(u.estado === 'Bloqueado') u.estado = 'Activo';
+                else u.estado = 'Bloqueado';
+                persistirDB();
+                renderizarAdminUsuarios();
+                mostrarToast(`Usuario ${u.email} cambiado a estado: ${u.estado}`);
+            }
+        }
+
+        function resetearClaveUsuario(email) {
+            let u = usuariosDB.find(x => x.email === email);
+            if(u) {
+                u.password = '123456'; // clave temporal por defecto
+                persistirDB();
+                mostrarToast(`Contraseña reseteada a '123456' para ${email}`);
+            }
+        }
+
+        function eliminarUsuario(email) {
+            if(confirm(`¿Estás seguro de eliminar al usuario ${email}?`)) {
+                usuariosDB = usuariosDB.filter(x => x.email !== email);
+                persistirDB();
+                renderizarAdminUsuarios();
+                mostrarToast('Usuario eliminado de la plataforma.');
+            }
         }
 
         function cambiarEstadoTicket(id, nuevoEstado) {
