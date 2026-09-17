@@ -342,8 +342,15 @@
         </div>
     </div>
 
-    <!-- Script General Blindado -->
+    <!-- Script General con Supabase Integrado -->
     <script>
+        // ==========================================
+        // CONFIGURACIÓN DE SUPABASE
+        // ==========================================
+        const SUPABASE_URL = 'https://mvsacrrbmirtnbbdzxur.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_nDQZc0QAbT_5oliQdps4PA_oA15bx39';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const ciudadesDB = [
             'Santiago (Centro)', 'Providencia', 'Las Condes', 'Ñuñoa', 'Valparaíso', 'Viña del Mar', 'Concepción', 'Antofagasta', 'La Serena', 'Temuco', 'Puerto Montt', 'Rancagua'
         ];
