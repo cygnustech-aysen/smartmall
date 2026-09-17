@@ -518,49 +518,94 @@
             cargarTiendasDesdeAPI();
         }
 
-        function cargarTiendasDesdeAPI() {
-            const filtroInput = document.getElementById('localidad-filtro-input');
-            const filtro = filtroInput ? filtroInput.value.trim().toLowerCase() : '';
-            const container = document.getElementById('stores-container');
-            if(!container) return;
-            container.innerHTML = '';
+async function cargarTiendasDesdeAPI() {
+    const filtroInput = document.getElementById('localidad-filtro-input');
+    const filtro = filtroInput ? filtroInput.value.trim().toLowerCase() : '';
+    const container = document.getElementById('stores-container');
+    if(!container) return;
+    container.innerHTML = '<p class="col-span-3 text-center text-gray-500 py-8">Cargando tiendas desde Supabase...</p>';
 
-            let res = backendTiendasDB.filter(t => !t.bloqueada && (!filtro || filtro === 'todas las ciudades' || t.localidad.toLowerCase().includes(filtro)));
-            
-            if(res.length === 0) {
-                container.innerHTML = `<p class="col-span-3 text-center text-gray-500 py-8">No hay tiendas en esta localidad o se encuentran inactivas.</p>`;
-            }
+    try {
+        // Consultamos la tabla 'tiendas' y traemos sus productos relacionados
+        let { data: tiendasSupabase, error } = await supabase
+            .from('tiendas')
+            .select(`
+                *,
+                productos (*)
+            `);
 
-            res.forEach(t => {
-                container.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col justify-between">
-                        <div>
-                            <div class="h-40 relative"><img src="${t.imagen}" class="w-full h-full object-cover"><span class="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full">Activa (${t.productos.length} prod)</span></div>
-                            <div class="p-4">
-                                <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">${t.localidad}</span>
-                                <h3 class="font-bold text-lg mt-1">${t.nombre}</h3>
-                                <p class="text-slate-600 text-sm mb-2">${t.desc}</p>
-                                <button onclick="abrirMapaGoogle('${t.lat || '-33.4489'}', '${t.lng || '-70.6693'}', '${t.nombre}')" class="text-xs text-amber-600 font-bold hover:underline flex items-center gap-1">
-                                    <i class="fa-solid fa-map-location-dot"></i> Ver en Google Maps
-                                </button>
-                            </div>
-                        </div>
-                        <div class="p-4 pt-0"><button onclick="verProductos(${t.id})" class="w-full bg-slate-900 text-white py-2 rounded text-sm font-semibold">Ver Catálogo</button></div>
-                    </div>
-                `;
-            });
+        if (error) throw error;
 
-            document.getElementById('admin-count-tiendas').innerText = backendTiendasDB.length;
-            document.getElementById('admin-count-ciudades').innerText = ciudadesDB.length;
-            let gmvTotal = ventasDB.reduce((acc, v) => acc + v.total, 0);
-            document.getElementById('admin-count-gmv').innerText = formatCLP(gmvTotal);
-
-            if(usuarioSesion && usuarioSesion.rol === 'admin') {
-                renderizarAdminStores();
-                renderizarAdminTickets();
-            }
+        // Si Supabase trae datos, actualizamos nuestro arreglo global
+        if (tiendasSupabase && tiendasSupabase.length > 0) {
+            // Mapeamos los nombres de columnas de Supabase a los que usa tu interfaz
+            backendTiendasDB = tiendasSupabase.map(t => ({
+                id: t.id,
+                ownerEmail: t.owner_email,
+                nombre: t.nombre,
+                localidad: t.localidad,
+                desc: t.descripcion,
+                imagen: t.imagen,
+                lat: t.lat,
+                lng: t.lng,
+                bloqueada: t.bloqueada,
+                productos: (t.productos || []).map(p => ({
+                    id: p.id,
+                    nombre: p.nombre,
+                    descripcion: p.descripcion,
+                    precio: p.precio,
+                    stock: p.stock,
+                    categoria: p.categoria,
+                    enOferta: p.en_oferta,
+                    descuento: p.descuento,
+                    imagen: p.imagen,
+                    preguntas: p.preguntas || []
+                }))
+            }));
         }
 
+        container.innerHTML = '';
+        let res = backendTiendasDB.filter(t => !t.bloqueada && (!filtro || filtro === 'todas las ciudades' || t.localidad.toLowerCase().includes(filtro)));
+        
+        if(res.length === 0) {
+            container.innerHTML = `<p class="col-span-3 text-center text-gray-500 py-8">No hay tiendas en esta localidad o se encuentran inactivas.</p>`;
+            return;
+        }
+
+        res.forEach(t => {
+            container.innerHTML += `
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col justify-between">
+                    <div>
+                        <div class="h-40 relative"><img src="${t.imagen}" class="w-full h-full object-cover"><span class="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full">Activa (${t.productos.length} prod)</span></div>
+                        <div class="p-4">
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">${t.localidad}</span>
+                            <h3 class="font-bold text-lg mt-1">${t.nombre}</h3>
+                            <p class="text-slate-600 text-sm mb-2">${t.desc}</p>
+                            <button onclick="abrirMapaGoogle('${t.lat || '-33.4489'}', '${t.lng || '-70.6693'}', '${t.nombre}')" class="text-xs text-amber-600 font-bold hover:underline flex items-center gap-1">
+                                <i class="fa-solid fa-map-location-dot"></i> Ver en Google Maps
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4 pt-0"><button onclick="verProductos(${t.id})" class="w-full bg-slate-900 text-white py-2 rounded text-sm font-semibold">Ver Catálogo</button></div>
+                </div>
+            `;
+        });
+
+        document.getElementById('admin-count-tiendas').innerText = backendTiendasDB.length;
+        document.getElementById('admin-count-ciudades').innerText = ciudadesDB.length;
+        let gmvTotal = ventasDB.reduce((acc, v) => acc + v.total, 0);
+        document.getElementById('admin-count-gmv').innerText = formatCLP(gmvTotal);
+
+        if(usuarioSesion && usuarioSesion.rol === 'admin') {
+            renderizarAdminStores();
+            renderizarAdminTickets();
+        }
+
+    } catch (err) {
+        console.error("Error al sincronizar con Supabase:", err.message);
+        mostrarToast('Error al conectar con la base de datos', 'error');
+    }
+}
         function verProductos(id) {
             let t = backendTiendasDB.find(x => x.id === id);
             document.getElementById('vista-catalogo').classList.add('hidden');
