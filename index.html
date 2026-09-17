@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartMall Chile - Ecosistema Oficial Apps Script</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Librería jsPDF para boletas electrónicas PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-100 font-sans relative">
+
+    <!-- CONTENEDOR DE NOTIFICACIONES PUSH DEL SITIO (TOASTS) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- Header / Barra de Navegación -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+            
+            <a href="#" onclick="irAInicio()" class="flex items-center gap-3">
+                <img src="https://lh3.googleusercontent.com/d/1jytFsKHYfwFaUT9lWA5jB15k6E-uRTYR" alt="Logo SmartMall" class="h-10 w-10 object-cover rounded-full border-2 border-amber-400 shadow">
+                <div>
+                    <span class="text-xl font-bold tracking-wide block leading-tight">SmartMall</span>
+                    <span class="text-xs text-amber-400 italic">Apps Script Production Chile</span>
+                </div>
+            </a>
+            
+            <!-- Buscador Global y Categorías -->
+            <div class="flex-1 max-w-lg mx-2 flex gap-2 min-w-[240px]">
+                <div class="relative flex-1">
+                    <input type="text" id="buscador-productos" oninput="buscarProductosGlobal()" placeholder="Buscar entre productos..." class="w-full bg-slate-800 text-white placeholder-gray-400 pl-9 pr-4 py-1.5 rounded-lg border border-slate-700 text-sm focus:outline-none focus:border-amber-400">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                </div>
+                <select id="filtro-categoria" onchange="buscarProductosGlobal()" class="bg-slate-800 text-white text-xs px-2 py-1.5 rounded border border-slate-700 focus:outline-none">
+                    <option value="todos">Todas</option>
+                    <option value="Vestuario">Vestuario</option>
+                    <option value="Tecnología">Tecnología</option>
+                    <option value="Gourmet">Gourmet</option>
+                    <option value="Outdoor">Outdoor</option>
+                </select>
+            </div>
+
+            <!-- Selector de Ciudad -->
+            <div class="flex items-center gap-2">
+                <div class="relative flex items-center gap-1 bg-slate-800 px-2 py-1 rounded border border-slate-700">
+                    <span class="text-amber-400 text-xs px-1"><i class="fa-solid fa-location-dot"></i></span>
+                    <input list="lista-ciudades-global" id="localidad-filtro-input" onchange="filtrarPorLocalidad()" oninput="filtrarPorLocalidad()" placeholder="Ciudad / Comuna" class="bg-transparent text-white placeholder-gray-400 text-sm focus:outline-none w-32">
+                    <datalist id="lista-ciudades-global"></datalist>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex items-center gap-3">
+                <button onclick="toggleCart()" class="relative bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-xl flex items-center gap-2 text-sm transition border border-slate-700">
+                    <i class="fa-solid fa-cart-shopping text-amber-400"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">0</span>
+                </button>
+
+                <div id="user-badge" class="hidden bg-slate-800 px-3 py-1 rounded-lg text-xs flex items-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-user-shield text-amber-400"></i>
+                    <div>
+                        <span id="role-name" class="block font-bold text-amber-300">Invitado</span>
+                        <span id="sub-status" class="text-[10px] text-gray-400">Sin sesión</span>
+                    </div>
+                </div>
+
+                <button onclick="abrirModalAuth('login')" id="btn-login-open" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-2 rounded-lg text-xs shadow flex items-center gap-1">
+                    <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                </button>
+                <button onclick="cerrarSesion()" id="btn-logout" class="hidden bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs">
+                    Salir
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="container mx-auto px-4 py-6">
+        
+        <!-- BANNER PROMOCIONAL -->
+        <section class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl p-4 mb-6 shadow-md flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2.5 rounded-xl text-amber-300 text-xl"><i class="fa-solid fa-tags"></i></div>
+                <div>
+                    <span class="bg-amber-400 text-slate-950 font-extrabold text-[10px] uppercase px-2 py-0.5 rounded-full">Bienvenida SmartMall</span>
+                    <h3 class="text-sm font-bold mt-0.5">¡5% de Descuento en tu Primera Compra!</h3>
+                    <p class="text-xs text-emerald-100">Usa el código <b class="text-amber-300 underline font-mono">SMARTMALL5</b> al pagar.</p>
+                </div>
+            </div>
+            <button onclick="aplicarCuponBienvenidaBanner()" class="bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs shadow">Usar Cupón</button>
+        </section>
+
+        <!-- PANEL DE CREADOR DE TIENDA -->
+        <div id="creator-dashboard" class="hidden bg-white rounded-2xl shadow-md p-6 mb-8 border-l-4 border-amber-500">
+            <div class="flex flex-wrap justify-between items-center border-b pb-4 mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-store text-amber-500"></i> Panel de tu Tienda y Soporte (Tickets)</h2>
+                    <p class="text-xs text-gray-500">Administra productos, stock, boletas y abre tickets de asistencia técnica.</p>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 flex items-center gap-2">
+                    <i class="fa-solid fa-shield-check"></i> Tienda Verificada
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <div class="bg-slate-50 p-4 rounded-xl border">
+                    <span class="text-xs text-slate-500 font-medium">Ventas Totales Tienda</span>
+                    <p id="creator-fin-ventas" class="text-2xl font-black text-slate-900">$0 CLP</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border">
+                    <span class="text-xs text-slate-500 font-medium">Pedidos Pendientes de Envío</span>
+                    <p id="creator-fin-ordenes" class="text-2xl font-black text-amber-600">0</p>
+                </div>
+            </div>
+
+            <div id="creator-no-store" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-xl mb-6 text-center">
+                <p class="text-sm text-amber-800 font-semibold mb-2">Registra los datos de tu tienda para comenzar.</p>
+                <button onclick="mostrarFormTienda()" class="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded text-xs">Registrar Mi Tienda</button>
+            </div>
+
+            <div id="creator-content-area" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-slate-50 p-4 rounded-xl border">
+                    <h3 class="font-bold text-sm text-slate-800 mb-3"><i class="fa-solid fa-map-location-dot text-amber-600"></i> Datos y Coordenadas de Tienda</h3>
+                    <form id="form-crear-tienda" onsubmit="apiGuardarTiendaCreador(event)" class="space-y-3">
+                        <input type="text" id="nombre-tienda" placeholder="Nombre de tienda" required class="w-full bg-white border rounded p-2 text-sm">
+                        <input list="lista-ciudades-form" id="localidad-tienda" required placeholder="Selecciona ciudad..." class="w-full bg-white border rounded p-2 text-sm">
+                        <datalist id="lista-ciudades-form"></datalist>
+                        <input type="text" id="desc-tienda" placeholder="Descripción breve" required class="w-full bg-white border rounded p-2 text-sm">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="lat-tienda" placeholder="Latitud (ej: -33.4489)" required class="bg-white border rounded p-2 text-xs">
+                            <input type="text" id="lng-tienda" placeholder="Longitud (ej: -70.6693)" required class="bg-white border rounded p-2 text-xs">
+                        </div>
+                        <input type="url" id="imagen-tienda" placeholder="URL Logo / Imagen" required class="w-full bg-white border rounded p-2 text-sm">
+                        <button type="submit" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded text-sm shadow">Guardar Cambios Tienda</button>
+                    </form>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border">
+                    <h3 class="font-bold text-sm text-slate-800 mb-3"><i class="fa-solid fa-box-open text-amber-600"></i> Agregar Producto al Inventario</h3>
+                    <form id="form-crear-producto" onsubmit="apiCrearProductoCreador(event)" class="space-y-3">
+                        <input type="text" id="nombre-producto" placeholder="Nombre del producto" required class="w-full bg-white border rounded p-2 text-sm">
+                        <textarea id="desc-producto" placeholder="Descripción detallada del producto..." required class="w-full bg-white border rounded p-2 text-xs h-16"></textarea>
+                        <input type="number" id="precio-producto" placeholder="Precio normal en CLP" required class="w-full bg-white border rounded p-2 text-sm">
+                        <input type="number" id="stock-producto" placeholder="Stock disponible" required class="w-full bg-white border rounded p-2 text-sm">
+                        <select id="categoria-producto" required class="w-full bg-white border rounded p-2 text-sm">
+                            <option value="">Selecciona Categoría...</option>
+                            <option value="Vestuario">Vestuario</option>
+                            <option value="Tecnología">Tecnología</option>
+                            <option value="Gourmet">Gourmet</option>
+                            <option value="Outdoor">Outdoor</option>
+                        </select>
+                        <div class="bg-amber-50 p-2.5 rounded border border-amber-200 space-y-2">
+                            <label class="flex items-center gap-2 text-xs font-bold text-amber-900 cursor-pointer">
+                                <input type="checkbox" id="check-oferta" onchange="toggleCamposOferta()"> ¿En Oferta?
+                            </label>
+                            <div id="campos-oferta" class="hidden">
+                                <input type="number" id="descuento-producto" placeholder="% Descuento" class="w-full bg-white border rounded p-1.5 text-xs">
+                            </div>
+                        </div>
+                        <input type="url" id="imagen-producto" placeholder="URL Imagen producto" required class="w-full bg-white border rounded p-2 text-sm">
+                        <button type="submit" class="w-full bg-slate-900 text-white font-bold py-2 rounded text-sm shadow">Publicar Producto</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Inventario, Pedidos y Soporte -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t pt-6">
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-3 text-sm"><i class="fa-solid fa-boxes-stacked text-amber-600"></i> Mi Inventario</h3>
+                    <div id="creator-my-products" class="space-y-2 max-h-48 overflow-y-auto text-xs bg-slate-50 p-3 rounded border"></div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-3 text-sm"><i class="fa-solid fa-truck-fast text-amber-600"></i> Pedidos y Boletas PDF</h3>
+                    <div id="creator-my-orders" class="space-y-3 max-h-48 overflow-y-auto text-xs bg-slate-50 p-3 rounded border"></div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-3 text-sm"><i class="fa-solid fa-headset text-amber-600"></i> Soporte / Crear Ticket</h3>
+                    <div class="bg-slate-50 p-3 rounded border space-y-2">
+                        <form onsubmit="crearTicketCreador(event)" class="space-y-2">
+                            <input type="text" id="ticket-asunto" placeholder="Asunto" required class="w-full bg-white border rounded p-1.5 text-xs">
+                            <textarea id="ticket-mensaje" placeholder="Describe tu consulta..." required class="w-full bg-white border rounded p-1.5 text-xs h-12"></textarea>
+                            <button type="submit" class="w-full bg-amber-500 text-slate-950 font-bold py-1.5 rounded text-xs">Enviar Ticket</button>
+                        </form>
+                        <div id="creator-tickets-list" class="space-y-1.5 max-h-28 overflow-y-auto text-[11px] mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL DE ADMINISTRADOR GENERAL -->
+        <div id="admin-dashboard" class="hidden bg-slate-900 text-white rounded-2xl shadow-md p-6 mb-8 border-l-4 border-blue-500">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
+                <div>
+                    <h2 class="text-xl font-bold"><i class="fa-solid fa-gauge-high text-blue-400"></i> Panel de Administración General</h2>
+                    <p class="text-xs text-slate-400">Supervisión, GMV, control de tiendas y gestión de tickets de creadores.</p>
+                </div>
+                <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">SuperAdmin</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700"><span class="text-xs text-slate-400">Tiendas Activas</span><p id="admin-count-tiendas" class="text-2xl font-black text-amber-400">0</p></div>
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700"><span class="text-xs text-slate-400">Ciudades en Red</span><p id="admin-count-ciudades" class="text-2xl font-black text-emerald-400">0</p></div>
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700"><span class="text-xs text-slate-400">GMV (Ventas Totales)</span><p id="admin-count-gmv" class="text-2xl font-black text-blue-400">$0 CLP</p></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <h3 class="font-bold text-sm mb-3 text-amber-300"><i class="fa-solid fa-shield-halved"></i> Control de Tiendas (Bloqueo / Habilitación)</h3>
+                    <div id="admin-stores-list" class="space-y-2 max-h-48 overflow-y-auto text-xs"></div>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <h3 class="font-bold text-sm mb-3 text-blue-300"><i class="fa-solid fa-ticket"></i> Tickets de Soporte de Creadores</h3>
+                    <div id="admin-tickets-list" class="space-y-2 max-h-48 overflow-y-auto text-xs"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PORTAL DEL CLIENTE -->
+        <div id="vista-portal-cliente" class="hidden bg-white rounded-2xl shadow-sm border p-6 mb-8">
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <div>
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-user-check"></i> Portal de Cliente</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-1" id="portal-bienvenida-txt">Mis Pedidos e Historial</h2>
+                </div>
+                <button onclick="irAInicio()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold">Ver Catálogo</button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm mb-3"><i class="fa-solid fa-truck-fast text-amber-500"></i> Pedidos Activos</h3>
+                    <div id="lista-pedidos-activos" class="space-y-3"></div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm mb-3"><i class="fa-solid fa-receipt text-amber-500"></i> Historial de Compras y Boletas PDF</h3>
+                    <div id="lista-historial-compras" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA DETALLE DE PRODUCTO Y PREGUNTAS Q&A -->
+        <div id="vista-detalle-producto" class="hidden bg-white rounded-2xl shadow-sm border p-6 mb-8"></div>
+
+        <!-- CATÁLOGO GENERAL DE TIENDAS -->
+        <div id="vista-catalogo">
+            <div class="flex flex-wrap justify-between items-center mb-6 gap-2">
+                <h2 id="section-main-title" class="text-2xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-shop text-amber-500"></i> Red Nacional de Tiendas Oficiales</h2>
+                <div id="controles-ordenamiento" class="hidden flex items-center gap-2">
+                    <label class="text-xs font-semibold text-slate-600">Ordenar:</label>
+                    <select id="select-orden" onchange="ordenarProductosActuales()" class="bg-white border text-xs px-2 py-1.5 rounded shadow-sm focus:outline-none">
+                        <option value="recientes">Más recientes</option>
+                        <option value="precio-asc">Precio: Menor a Mayor</option>
+                        <option value="precio-desc">Precio: Mayor a Menor</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="search-results-banner" class="hidden mb-6 bg-amber-50 border border-amber-200 p-4 rounded-xl flex justify-between items-center">
+                <p id="search-results-text" class="text-sm font-semibold text-amber-900">Resultados</p>
+                <button onclick="limpiarBusqueda()" class="text-xs text-blue-600 font-bold hover:underline">Ver todas las tiendas</button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="stores-container"></div>
+        </div>
+
+        <!-- PRODUCTOS DE UNA TIENDA -->
+        <div id="products-section" class="mt-4 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="store-title" class="text-2xl font-bold text-slate-800">Productos</h2>
+                <button onclick="cerrarProductos()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold">Volver a tiendas</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="products-container"></div>
+        </div>
+    </main>
+
+    <!-- MODAL AUTH -->
+    <div id="auth-modal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
+            <button onclick="cerrarModalAuth()" class="absolute top-4 right-4 text-gray-400 hover:text-slate-700 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div class="text-center mb-6">
+                <img src="https://lh3.googleusercontent.com/d/1jytFsKHYfwFaUT9lWA5jB15k6E-uRTYR" alt="Logo" class="h-14 w-14 object-cover rounded-full mx-auto mb-2 border-2 border-amber-500 shadow">
+                <h3 id="auth-title" class="text-xl font-bold text-slate-900">Iniciar Sesión</h3>
+            </div>
+            
+            <form id="form-login" onsubmit="procesarLogin(event)" class="space-y-3">
+                <div class="bg-amber-50 p-2.5 rounded-lg text-[11px] text-amber-900 text-center mb-2 border border-amber-200">
+                    <b>Credenciales de Prueba:</b><br>
+                    • Admin: <b>admin@smartmall.cl</b> / 1234<br>
+                    • Creador Tienda: <b>creador@smartmall.cl</b> / 1234
+                </div>
+                <input type="email" id="login-email" required placeholder="correo@ejemplo.cl" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
+                <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl text-sm shadow">Entrar</button>
+                <div class="text-center pt-2">
+                    <button type="button" onclick="cambiarModoAuth('registro')" class="text-xs text-blue-600 hover:underline">¿No tienes cuenta de cliente? Regístrate aquí</button>
+                </div>
+            </form>
+
+            <form id="form-registro" onsubmit="procesarRegistroClienteReal(event)" class="space-y-3 hidden">
+                <input type="text" id="reg-nombre" required placeholder="Tu nombre completo" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
+                <input type="email" id="reg-email" required placeholder="correo@ejemplo.cl" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
+                <input type="password" id="reg-password" required placeholder="Crea una contraseña" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
+                <button type="submit" id="btn-submit-reg" class="w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl text-sm shadow">Registrarse y Enviar Correo Real</button>
+                <div class="text-center pt-2">
+                    <button type="button" onclick="cambiarModoAuth('login')" class="text-xs text-blue-600 hover:underline">¿Ya tienes cuenta? Inicia sesión</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CARRITO -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex justify-end">
+        <div class="bg-white w-full max-w-md h-full shadow-2xl p-6 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-center border-b pb-4 mb-4">
+                    <h3 class="text-xl font-bold flex items-center gap-2 text-slate-900"><i class="fa-solid fa-cart-shopping text-amber-500"></i> Carrito SmartMall</h3>
+                    <button onclick="toggleCart()" class="text-gray-500 text-lg"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div class="mb-4 bg-emerald-50 p-3 rounded-xl border border-emerald-200">
+                    <label class="block font-semibold text-xs mb-1 text-emerald-900">¿Tienes un cupón de descuento?</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="input-cupon-cliente" placeholder="Ej: SMARTMALL5" class="w-full bg-white border rounded-lg p-1.5 text-xs uppercase font-mono">
+                        <button type="button" onclick="aplicarCuponCliente()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Aplicar</button>
+                    </div>
+                    <p id="cupon-status-txt" class="text-[10px] text-emerald-700 mt-1 font-semibold hidden">¡Cupón SMARTMALL5 aplicado (-5% OFF)!</p>
+                </div>
+
+                <div id="cart-items" class="space-y-3 max-h-48 overflow-y-auto mb-4">
+                    <p class="text-gray-400 text-sm text-center py-4">Tu carrito está vacío</p>
+                </div>
+            </div>
+
+            <div class="border-t pt-4">
+                <div class="flex justify-between text-sm mb-1"><span>Subtotal:</span><span id="cart-subtotal">$0 CLP</span></div>
+                <div id="fila-descuento-cupon" class="hidden flex justify-between text-sm mb-1 text-emerald-600 font-semibold"><span>Descuento (5%):</span><span id="cart-descuento-txt">-$0 CLP</span></div>
+                <div class="flex justify-between font-bold text-lg mb-4"><span>Total:</span><span id="cart-total" class="text-blue-600">$0 CLP</span></div>
+                <button onclick="finalizarCompra()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 py-3 rounded-xl font-bold shadow">Pagar y Generar Pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script General Blindado -->
+    <script>
+        const ciudadesDB = [
+            'Santiago (Centro)', 'Providencia', 'Las Condes', 'Ñuñoa', 'Valparaíso', 'Viña del Mar', 'Concepción', 'Antofagasta', 'La Serena', 'Temuco', 'Puerto Montt', 'Rancagua'
+        ];
+
+        let usuariosDB = [
+            { nombre: 'Administrador General', email: 'admin@smartmall.cl', password: '1234', rol: 'admin' },
+            { nombre: 'Moda Urbana Stgo', email: 'creador@smartmall.cl', password: '1234', rol: 'creador' }
+        ];
+
+        let backendTiendasDB = JSON.parse(localStorage.getItem('smartmall_tiendas')) || [
+            { id: 1, ownerEmail: 'creador@smartmall.cl', nombre: 'Moda Urbana Stgo', localidad: 'Santiago (Centro)', desc: 'Indumentaria juvenil y urbana.', imagen: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&auto=format&fit=crop&q=60', lat: '-33.4489', lng: '-70.6693', bloqueada: false, productos: [
+                {id: 101, nombre: 'Polerón Oversize', descripcion: 'Polerón de algodón 100% perchado con capucha y bolsillo canguro.', precio: 29990, stock: 12, enOferta: true, descuento: 15, categoria: 'Vestuario', imagen: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=60', preguntas: []}
+            ]},
+            { id: 2, ownerEmail: 'stgo2@smartmall.cl', nombre: 'Electro Centro Stgo', localidad: 'Santiago (Centro)', desc: 'Accesorios y carga rápida.', imagen: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&auto=format&fit=crop&q=60', lat: '-33.4450', lng: '-70.6500', bloqueada: false, productos: [
+                {id: 201, nombre: 'PowerBank 20000mAh', descripcion: 'Batería externa con carga ultrarrápida de 22.5W.', precio: 34990, stock: 10, enOferta: true, descuento: 10, categoria: 'Tecnología', imagen: 'https://images.unsplash.com/photo-1609592424148-3f41a49c83a7?w=500&auto=format&fit=crop&q=60', preguntas: []}
+            ]}
+        ];
+
+        let carrito = JSON.parse(localStorage.getItem('smartmall_cart')) || [];
+        let pedidosDB = JSON.parse(localStorage.getItem('smartmall_pedidos')) || [];
+        let ventasDB = JSON.parse(localStorage.getItem('smartmall_ventas')) || [];
+        let ticketsDB = JSON.parse(localStorage.getItem('smartmall_tickets')) || [];
+        let usuarioSesion = JSON.parse(localStorage.getItem('smartmall_sesion')) || null;
+        let cuponAplicadoValido = false;
+        let resultadosBusquedaCache = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                poblarDatalistsCiudades();
+                cargarTiendasDesdeAPI();
+                actualizarCarritoUI();
+                if(usuarioSesion) aplicarEstadoSesion(usuarioSesion);
+            } catch(e) {
+                console.error("Error en inicialización:", e);
+            }
+        });
+
+        function persistirDB() {
+            localStorage.setItem('smartmall_tiendas', JSON.stringify(backendTiendasDB));
+            localStorage.setItem('smartmall_pedidos', JSON.stringify(pedidosDB));
+            localStorage.setItem('smartmall_ventas', JSON.stringify(ventasDB));
+            localStorage.setItem('smartmall_tickets', JSON.stringify(ticketsDB));
+        }
+
+        function mostrarToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            const toast = document.createElement('div');
+            let bgClass = tipo === 'success' ? 'bg-slate-900 text-white border-amber-400' : 'bg-red-600 text-white border-red-300';
+            
+            toast.className = `${bgClass} p-3 rounded-xl shadow-2xl border-l-4 text-xs font-semibold pointer-events-auto transition transform translate-y-2 opacity-0 flex items-center justify-between gap-3`;
+            toast.innerHTML = `<span><i class="fa-solid fa-bell text-amber-400 mr-1.5"></i> ${mensaje}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 50);
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function formatCLP(amount) {
+            return '$' + amount.toLocaleString('es-CL') + ' CLP';
+        }
+
+        function poblarDatalistsCiudades() {
+            const listGlobal = document.getElementById('lista-ciudades-global');
+            const listForm = document.getElementById('lista-ciudades-form');
+            if(listGlobal) {
+                listGlobal.innerHTML = '<option value="Todas las ciudades">';
+                ciudadesDB.forEach(c => { listGlobal.innerHTML += `<option value="${c}">`; });
+            }
+            if(listForm) {
+                listForm.innerHTML = '';
+                ciudadesDB.forEach(c => { listForm.innerHTML += `<option value="${c}">`; });
+            }
+        }
+
+        function calcularPrecioFinal(prod) {
+            if(prod.enOferta && prod.descuento > 0) {
+                return Math.round(prod.precio * (1 - (prod.descuento / 100)));
+            }
+            return prod.precio;
+        }
+
+        function abrirMapaGoogle(lat, lng, nombre) {
+            window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
+            mostrarToast(`Abriendo mapa satelital para: ${nombre}`);
+        }
+
+        function buscarProductosGlobal() {
+            const query = document.getElementById('buscador-productos').value.trim().toLowerCase();
+            const categoria = document.getElementById('filtro-categoria').value;
+            const banner = document.getElementById('search-results-banner');
+            const bannerText = document.getElementById('search-results-text');
+            const mainTitle = document.getElementById('section-main-title');
+            const contOrden = document.getElementById('controles-ordenamiento');
+
+            if(!query && categoria === 'todos') { 
+                banner.classList.add('hidden'); mainTitle.style.display = 'block'; contOrden.classList.add('hidden');
+                cargarTiendasDesdeAPI(); return; 
+            }
+
+            mainTitle.style.display = 'none'; banner.classList.remove('hidden'); contOrden.classList.remove('hidden');
+            resultadosBusquedaCache = [];
+
+            backendTiendasDB.filter(t => !t.bloqueada).forEach(t => {
+                t.productos.forEach(p => {
+                    let matchNombre = !query || p.nombre.toLowerCase().includes(query) || p.descripcion.toLowerCase().includes(query);
+                    let matchCat = categoria === 'todos' || p.categoria === categoria;
+                    if(matchNombre && matchCat) {
+                        resultadosBusquedaCache.push({ tiendaId: t.id, tiendaOwner: t.ownerEmail, tiendaNombre: t.nombre, tiendaLocalidad: t.localidad, ...p });
+                    }
+                });
+            });
+
+            bannerText.innerHTML = `Resultados (${resultadosBusquedaCache.length} productos)`;
+            ordenarProductosActuales();
+        }
+
+        function ordenarProductosActuales() {
+            const orden = document.getElementById('select-orden').value;
+            const container = document.getElementById('stores-container');
+            container.innerHTML = '';
+
+            let lista = [...resultadosBusquedaCache];
+            if(orden === 'precio-asc') lista.sort((a,b) => calcularPrecioFinal(a) - calcularPrecioFinal(b));
+            if(orden === 'precio-desc') lista.sort((a,b) => calcularPrecioFinal(b) - calcularPrecioFinal(a));
+
+            if(lista.length === 0) {
+                container.innerHTML = `<p class="col-span-3 text-center text-gray-500 py-8">No se encontraron productos.</p>`;
+                return;
+            }
+
+            lista.forEach(prod => {
+                let pFinal = calcularPrecioFinal(prod);
+                container.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-sm border p-4 flex flex-col justify-between cursor-pointer hover:shadow-md transition" onclick="verDetalleProducto(${prod.tiendaId}, ${prod.id})">
+                        <div>
+                            <div class="h-36 relative mb-2">
+                                <img src="${prod.imagen}" class="w-full h-full object-cover rounded">
+                                <span class="absolute top-2 right-2 bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full">${prod.tiendaNombre}</span>
+                            </div>
+                            <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-semibold">${prod.categoria} • Stock: ${prod.stock}</span>
+                            <h4 class="font-bold text-slate-800 text-base mt-1">${prod.nombre}</h4>
+                            <div class="mt-1">
+                                <span class="text-blue-600 font-bold text-sm">${formatCLP(pFinal)}</span>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); agregarAlCarrito(${prod.id}, '${prod.nombre}', ${pFinal}, '${prod.tiendaNombre}', '${prod.tiendaOwner}')" class="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 rounded text-xs font-semibold">Agregar al Carrito</button>
+                    </div>
+                `;
+            });
+        }
+
+        function filtrarPorLocalidad() { cargarTiendasDesdeAPI(); }
+
+        function limpiarBusqueda() {
+            document.getElementById('buscador-productos').value = '';
+            document.getElementById('filtro-categoria').value = 'todos';
+            document.getElementById('localidad-filtro-input').value = '';
+            document.getElementById('search-results-banner').classList.add('hidden');
+            document.getElementById('section-main-title').style.display = 'block';
+            document.getElementById('controles-ordenamiento').classList.add('hidden');
+            cargarTiendasDesdeAPI();
+        }
+
+        function cargarTiendasDesdeAPI() {
+            const filtroInput = document.getElementById('localidad-filtro-input');
+            const filtro = filtroInput ? filtroInput.value.trim().toLowerCase() : '';
+            const container = document.getElementById('stores-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            let res = backendTiendasDB.filter(t => !t.bloqueada && (!filtro || filtro === 'todas las ciudades' || t.localidad.toLowerCase().includes(filtro)));
+            
+            if(res.length === 0) {
+                container.innerHTML = `<p class="col-span-3 text-center text-gray-500 py-8">No hay tiendas en esta localidad o se encuentran inactivas.</p>`;
+            }
+
+            res.forEach(t => {
+                container.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <div class="h-40 relative"><img src="${t.imagen}" class="w-full h-full object-cover"><span class="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full">Activa (${t.productos.length} prod)</span></div>
+                            <div class="p-4">
+                                <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">${t.localidad}</span>
+                                <h3 class="font-bold text-lg mt-1">${t.nombre}</h3>
+                                <p class="text-slate-600 text-sm mb-2">${t.desc}</p>
+                                <button onclick="abrirMapaGoogle('${t.lat || '-33.4489'}', '${t.lng || '-70.6693'}', '${t.nombre}')" class="text-xs text-amber-600 font-bold hover:underline flex items-center gap-1">
+                                    <i class="fa-solid fa-map-location-dot"></i> Ver en Google Maps
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-4 pt-0"><button onclick="verProductos(${t.id})" class="w-full bg-slate-900 text-white py-2 rounded text-sm font-semibold">Ver Catálogo</button></div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('admin-count-tiendas').innerText = backendTiendasDB.length;
+            document.getElementById('admin-count-ciudades').innerText = ciudadesDB.length;
+            let gmvTotal = ventasDB.reduce((acc, v) => acc + v.total, 0);
+            document.getElementById('admin-count-gmv').innerText = formatCLP(gmvTotal);
+
+            if(usuarioSesion && usuarioSesion.rol === 'admin') {
+                renderizarAdminStores();
+                renderizarAdminTickets();
+            }
+        }
+
+        function verProductos(id) {
+            let t = backendTiendasDB.find(x => x.id === id);
+            document.getElementById('vista-catalogo').classList.add('hidden');
+            document.getElementById('products-section').classList.remove('hidden');
+            document.getElementById('store-title').innerText = `${t.nombre} (${t.localidad})`;
+            document.getElementById('products-container').innerHTML = t.productos.map(p => {
+                let pFinal = calcularPrecioFinal(p);
+                return `
+                    <div class="bg-white rounded-xl border p-4 flex flex-col justify-between cursor-pointer hover:shadow-md transition" onclick="verDetalleProducto(${t.id}, ${p.id})">
+                        <div>
+                            <div class="h-32 relative mb-2"><img src="${p.imagen}" class="w-full h-full object-cover rounded"></div>
+                            <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded font-semibold">${p.categoria} • Stock: ${p.stock}</span>
+                            <h4 class="font-bold mt-1">${p.nombre}</h4>
+                            <span class="text-blue-600 font-bold">${formatCLP(pFinal)}</span>
+                        </div>
+                        <button onclick="event.stopPropagation(); agregarAlCarrito(${p.id}, '${p.nombre}', ${pFinal}, '${t.nombre}', '${t.ownerEmail}')" class="mt-3 bg-emerald-600 text-white py-1.5 rounded text-xs font-semibold">Agregar al Carrito</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function verDetalleProducto(tiendaId, prodId) {
+            let t = backendTiendasDB.find(x => x.id === tiendaId);
+            let p = t.productos.find(x => x.id === prodId);
+            if(!p) return;
+
+            document.getElementById('vista-catalogo').classList.add('hidden');
+            document.getElementById('products-section').classList.add('hidden');
+            document.getElementById('vista-portal-cliente').classList.add('hidden');
+            document.getElementById('creator-dashboard').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            
+            const view = document.getElementById('vista-detalle-producto');
+            view.classList.remove('hidden');
+
+            let pFinal = calcularPrecioFinal(p);
+            let preguntasHTML = (p.preguntas || []).map(q => `
+                <div class="bg-slate-50 p-3 rounded-xl border text-xs space-y-1">
+                    <p class="font-bold text-slate-800"><i class="fa-solid fa-circle-question text-blue-500"></i> ${q.pregunta}</p>
+                    <p class="text-gray-600 pl-4"><i class="fa-solid fa-reply text-emerald-600"></i> ${q.respuesta || 'Esperando respuesta...'}</p>
+                </div>
+            `).join('') || '<p class="text-gray-400 text-xs">No hay consultas todavía.</p>';
+
+            view.innerHTML = `
+                <button onclick="irAInicio()" class="mb-6 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="h-80 rounded-2xl overflow-hidden border shadow-sm"><img src="${p.imagen}" class="w-full h-full object-cover"></div>
+                    <div>
+                        <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded font-semibold">${p.categoria} • ${t.nombre}</span>
+                        <h2 class="text-2xl font-black text-slate-900 mt-2">${p.nombre}</h2>
+                        <span class="text-xl font-black text-blue-600">${formatCLP(pFinal)}</span>
+                        <div class="bg-slate-50 p-4 rounded-xl border my-4">
+                            <p class="text-sm text-slate-600">${p.descripcion}</p>
+                        </div>
+                        <button onclick="agregarAlCarrito(${p.id}, '${p.nombre}', ${pFinal}, '${t.nombre}', '${t.ownerEmail}')" class="bg-amber-500 text-slate-950 px-6 py-3 rounded-xl font-bold text-sm shadow">Agregar al Carrito</button>
+                    </div>
+                </div>
+                <div class="mt-8 border-t pt-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">Preguntas sobre el Producto</h3>
+                    <div class="space-y-3 mb-6">${preguntasHTML}</div>
+                    <form onsubmit="enviarPreguntaProducto(event, ${t.id}, ${p.id})" class="bg-slate-50 p-4 rounded-xl border space-y-2">
+                        <input type="text" id="input-pregunta-cliente" placeholder="Escribe tu consulta..." required class="w-full bg-white border rounded p-2 text-xs">
+                        <button type="submit" class="bg-slate-900 text-white font-bold px-4 py-2 rounded text-xs">Enviar Consulta</button>
+                    </form>
+                </div>
+            `;
+        }
+
+        function enviarPreguntaProducto(e, tiendaId, prodId) {
+            e.preventDefault();
+            let texto = document.getElementById('input-pregunta-cliente').value.trim();
+            if(!texto) return;
+            let t = backendTiendasDB.find(x => x.id === tiendaId);
+            let p = t.productos.find(x => x.id === prodId);
+            if(!p.preguntas) p.preguntas = [];
+            p.preguntas.push({ pregunta: texto, respuesta: '' });
+            persistirDB();
+            mostrarToast('Consulta enviada con éxito.');
+            verDetalleProducto(tiendaId, prodId);
+        }
+
+        function cerrarProductos() {
+            document.getElementById('products-section').classList.add('hidden');
+            document.getElementById('vista-catalogo').classList.remove('hidden');
+        }
+
+        function irAInicio() {
+            document.getElementById('products-section').classList.add('hidden');
+            document.getElementById('vista-portal-cliente').classList.add('hidden');
+            document.getElementById('vista-detalle-producto').classList.add('hidden');
+            document.getElementById('vista-catalogo').classList.remove('hidden');
+            if(usuarioSesion && usuarioSesion.rol === 'creador') document.getElementById('creator-dashboard').classList.remove('hidden');
+            if(usuarioSesion && usuarioSesion.rol === 'admin') document.getElementById('admin-dashboard').classList.remove('hidden');
+        }
+
+        function abrirModalAuth(m) {
+            document.getElementById('auth-modal').classList.remove('hidden');
+            if(m === 'login') {
+                document.getElementById('auth-title').innerText = 'Iniciar Sesión';
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-registro').classList.add('hidden');
+            } else {
+                document.getElementById('auth-title').innerText = 'Registro Real Apps Script';
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-registro').classList.remove('hidden');
+            }
+        }
+        function cerrarModalAuth() { document.getElementById('auth-modal').classList.add('hidden'); }
+        function cambiarModoAuth(m) { abrirModalAuth(m); }
+
+        function procesarLogin(e) {
+            e.preventDefault();
+            let email = document.getElementById('login-email').value.trim();
+            let pass = document.getElementById('login-password').value.trim();
+
+            let u = usuariosDB.find(x => x.email === email && x.password === pass);
+            if(u) {
+                usuarioSesion = { ...u };
+                localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
+                cerrarModalAuth();
+                aplicarEstadoSesion(usuarioSesion);
+                mostrarToast(`¡Bienvenido de nuevo, ${u.nombre}!`);
+                return;
+            }
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        if(res.success) {
+                            usuarioSesion = res;
+                            localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
+                            cerrarModalAuth();
+                            aplicarEstadoSesion(usuarioSesion);
+                            mostrarToast(`¡Bienvenido, ${res.nombre}!`);
+                            abrirPortalCliente();
+                        } else {
+                            mostrarToast(res.message, 'error');
+                        }
+                    })
+                    .iniciarSesionReal(email, pass);
+            } else {
+                mostrarToast('Entorno de Apps Script no disponible localmente.', 'error');
+            }
+        }
+
+        function procesarRegistroClienteReal(e) {
+            e.preventDefault();
+            let nombre = document.getElementById('reg-nombre').value.trim();
+            let email = document.getElementById('reg-email').value.trim();
+            let password = document.getElementById('reg-password').value.trim();
+            let btn = document.getElementById('btn-submit-reg');
+
+            btn.innerText = 'Enviando correo real de verificación...';
+            btn.disabled = true;
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        btn.innerText = 'Registrarse y Enviar Correo Real';
+                        btn.disabled = false;
+                        if(res.success) {
+                            cerrarModalAuth();
+                            mostrarToast(`¡Correo de verificación enviado a ${email}!`);
+                            usuarioSesion = res;
+                            localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
+                            aplicarEstadoSesion(usuarioSesion);
+                            abrirPortalCliente();
+                        } else {
+                            mostrarToast(res.message, 'error');
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        btn.innerText = 'Registrarse y Enviar Correo Real';
+                        btn.disabled = false;
+                        mostrarToast('Error de ejecución en servidor: ' + err.message, 'error');
+                    })
+                    .registrarClienteReal(nombre, email, password);
+            } else {
+                btn.innerText = 'Registrarse y Enviar Correo Real';
+                btn.disabled = false;
+                mostrarToast('La función de correo real requiere estar desplegado en Google Apps Script.', 'error');
+            }
+        }
+
+        function cerrarSesion() {
+            usuarioSesion = null;
+            localStorage.removeItem('smartmall_sesion');
+            document.getElementById('user-badge').classList.add('hidden');
+            document.getElementById('btn-login-open').classList.remove('hidden');
+            document.getElementById('btn-logout').classList.add('hidden');
+            document.getElementById('creator-dashboard').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            document.getElementById('vista-portal-cliente').classList.add('hidden');
+            document.getElementById('vista-detalle-producto').classList.add('hidden');
+            irAInicio();
+            mostrarToast('Sesión finalizada.');
+        }
+
+        function aplicarEstadoSesion(u) {
+            document.getElementById('user-badge').classList.remove('hidden');
+            document.getElementById('btn-login-open').classList.add('hidden');
+            document.getElementById('btn-logout').classList.remove('hidden');
+            document.getElementById('role-name').innerText = u.nombre;
+            document.getElementById('sub-status').innerText = `Rol: ${u.rol.toUpperCase()}`;
+
+            if(u.rol === 'creador') {
+                document.getElementById('creator-dashboard').classList.remove('hidden');
+                verificarTiendaCreador();
+            } else if(u.rol === 'admin') {
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+                renderizarAdminStores();
+                renderizarAdminTickets();
+            }
+        }
+
+        function verificarTiendaCreador() {
+            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
+            if(tp) {
+                document.getElementById('creator-no-store').classList.add('hidden');
+                document.getElementById('creator-content-area').classList.remove('hidden');
+                document.getElementById('nombre-tienda').value = tp.nombre;
+                document.getElementById('localidad-tienda').value = tp.localidad;
+                document.getElementById('desc-tienda').value = tp.desc;
+                document.getElementById('lat-tienda').value = tp.lat || '-33.4489';
+                document.getElementById('lng-tienda').value = tp.lng || '-70.6693';
+                document.getElementById('imagen-tienda').value = tp.imagen;
+            } else {
+                document.getElementById('creator-no-store').classList.remove('hidden');
+                document.getElementById('creator-content-area').classList.add('hidden');
+            }
+            actualizarDashboardCreador();
+        }
+
+        function mostrarFormTienda() {
+            document.getElementById('creator-no-store').classList.add('hidden');
+            document.getElementById('creator-content-area').classList.remove('hidden');
+        }
+
+        function apiGuardarTiendaCreador(e) {
+            e.preventDefault();
+            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
+            let d = {
+                nombre: document.getElementById('nombre-tienda').value,
+                localidad: document.getElementById('localidad-tienda').value,
+                desc: document.getElementById('desc-tienda').value,
+                lat: document.getElementById('lat-tienda').value,
+                lng: document.getElementById('lng-tienda').value,
+                imagen: document.getElementById('imagen-tienda').value,
+                bloqueada: false
+            };
+            if(tp) Object.assign(tp, d);
+            else backendTiendasDB.push({ id: Date.now(), ownerEmail: usuarioSesion.email, productos: [], ...d });
+            persistirDB(); cargarTiendasDesdeAPI(); verificarTiendaCreador();
+            mostrarToast('Tienda guardada con éxito.');
+        }
+
+        function toggleCamposOferta() {
+            let chk = document.getElementById('check-oferta').checked;
+            let campos = document.getElementById('campos-oferta');
+            if(chk) campos.classList.remove('hidden'); else campos.classList.add('hidden');
+        }
+
+        function apiCrearProductoCreador(e) {
+            e.preventDefault();
+            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
+            if(!tp) { mostrarToast('Registra tu tienda primero.', 'error'); return; }
+
+            let enOferta = document.getElementById('check-oferta').checked;
+            let nuevoProd = {
+                id: Date.now(),
+                nombre: document.getElementById('nombre-producto').value,
+                descripcion: document.getElementById('desc-producto').value,
+                precio: parseInt(document.getElementById('precio-producto').value),
+                stock: parseInt(document.getElementById('stock-producto').value),
+                categoria: document.getElementById('categoria-producto').value,
+                enOferta: enOferta,
+                descuento: enOferta ? parseInt(document.getElementById('descuento-producto').value || 0) : 0,
+                imagen: document.getElementById('imagen-producto').value,
+                preguntas: []
+            };
+
+            tp.productos.push(nuevoProd);
+            persistirDB(); cargarTiendasDesdeAPI(); verificarTiendaCreador();
+            mostrarToast('Producto publicado.');
+            document.getElementById('form-crear-producto').reset();
+            document.getElementById('campos-oferta').classList.add('hidden');
+        }
+
+        function eliminarProductoCreador(prodId) {
+            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
+            if(tp) {
+                tp.productos = tp.productos.filter(p => p.id !== prodId);
+                persistirDB(); cargarTiendasDesdeAPI(); verificarTiendaCreador();
+                mostrarToast('Producto eliminado.');
+            }
+        }
+
+        function crearTicketCreador(e) {
+            e.preventDefault();
+            let asunto = document.getElementById('ticket-asunto').value.trim();
+            let mensaje = document.getElementById('ticket-mensaje').value.trim();
+
+            ticketsDB.push({
+                id: Date.now(),
+                creadorEmail: usuarioSesion.email,
+                asunto,
+                mensaje,
+                estado: 'Abierto / Activo',
+                fecha: new Date().toLocaleDateString()
+            });
+            persistirDB();
+            actualizarDashboardCreador();
+            if(usuarioSesion && usuarioSesion.rol === 'admin') renderizarAdminTickets();
+            mostrarToast('Ticket enviado al Administrador.');
+            e.target.reset();
+        }
+
+        function actualizarDashboardCreador() {
+            if(!usuarioSesion || usuarioSesion.rol !== 'creador') return;
+            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
+            if(!tp) return;
+
+            let misVentas = ventasDB.filter(v => v.tiendaNombre === tp.nombre);
+            let totalIngresos = misVentas.reduce((acc, v) => acc + v.total, 0);
+            document.getElementById('creator-fin-ventas').innerText = formatCLP(totalIngresos);
+            document.getElementById('creator-fin-ordenes').innerText = pedidosDB.filter(o => o.tiendaOwner === usuarioSesion.email && o.estado === 'Pendiente de Envío').length;
+
+            let invContainer = document.getElementById('creator-my-products');
+            invContainer.innerHTML = tp.productos.length ? tp.productos.map(p => `
+                <div class="flex justify-between items-center bg-white p-2 rounded border">
+                    <div>
+                        <b class="text-slate-900">${p.nombre}</b><br>
+                        <span class="text-gray-500">${formatCLP(calcularPrecioFinal(p))} • Stock: <b>${p.stock}</b></span>
+                    </div>
+                    <button onclick="eliminarProductoCreador(${p.id})" class="text-red-600 font-bold hover:underline">Eliminar</button>
+                </div>
+            `).join('') : '<p class="text-gray-400">No tienes productos.</p>';
+
+            let ordContainer = document.getElementById('creator-my-orders');
+            let misPedidos = pedidosDB.filter(o => o.tiendaOwner === usuarioSesion.email);
+            ordContainer.innerHTML = misPedidos.length ? misPedidos.map(ord => `
+                <div class="bg-white p-2.5 rounded border">
+                    <p class="font-bold text-slate-800">Cliente: ${ord.clienteEmail}</p>
+                    <p class="text-gray-600">Prod: ${ord.producto} (x${ord.cantidad}) • ${formatCLP(ord.total)}</p>
+                    ${ord.estado === 'Pendiente de Envío' ? `
+                        <button onclick="enviarPedidoYBoletaPDF(${ord.id})" class="mt-2 bg-emerald-600 text-white font-bold px-3 py-1.5 rounded text-[11px] shadow">
+                            <i class="fa-solid fa-file-pdf mr-1"></i> Enviar Boleta PDF
+                        </button>
+                    ` : `<span class="text-emerald-600 font-bold"><i class="fa-solid fa-check"></i> Despachado</span>`}
+                </div>
+            `).join('') : '<p class="text-gray-400">No hay pedidos pendientes.</p>';
+
+            let tkContainer = document.getElementById('creator-tickets-list');
+            let misTickets = ticketsDB.filter(t => t.creadorEmail === usuarioSesion.email);
+            tkContainer.innerHTML = misTickets.length ? misTickets.map(tk => `
+                <div class="bg-white p-2 rounded border">
+                    <b>${tk.asunto}</b> <span class="text-amber-600 font-bold">(${tk.estado})</span>
+                    <p class="text-gray-500">${tk.mensaje}</p>
+                </div>
+            `).join('') : '<p class="text-gray-400">Sin tickets abiertos.</p>';
+        }
+
+        function renderizarAdminStores() {
+            let container = document.getElementById('admin-stores-list');
+            if(!container) return;
+
+            container.innerHTML = backendTiendasDB.length ? backendTiendasDB.map(t => `
+                <div class="flex justify-between items-center bg-slate-900 p-3 rounded border border-slate-700">
+                    <div>
+                        <b class="text-white">${t.nombre}</b> <span class="text-xs text-blue-400">(${t.localidad})</span>
+                        <p class="text-[10px] text-gray-400">Dueño: ${t.ownerEmail}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded ${t.bloqueada ? 'bg-red-500 text-white' : 'bg-emerald-500 text-slate-950'}">${t.bloqueada ? 'Bloqueada' : 'Activa'}</span>
+                        <button onclick="toggleBloquearTienda(${t.id})" class="px-2.5 py-1 rounded text-xs font-bold ${t.bloqueada ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}">
+                            ${t.bloqueada ? 'Desbloquear' : 'Bloquear'}
+                        </button>
+                    </div>
+                </div>
+            `).join('') : '<p class="text-gray-400">No hay tiendas registradas.</p>';
+        }
+
+        function renderizarAdminTickets() {
+            let container = document.getElementById('admin-tickets-list');
+            if(!container) return;
+
+            container.innerHTML = ticketsDB.length ? ticketsDB.map(tk => `
+                <div class="bg-slate-900 p-3 rounded border border-slate-700 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <b class="text-amber-400">${tk.asunto}</b>
+                        <span class="text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded font-bold">${tk.estado}</span>
+                    </div>
+                    <p class="text-gray-300">${tk.mensaje}</p>
+                    <p class="text-[10px] text-gray-500">De: ${tk.creadorEmail} • ${tk.fecha}</p>
+                    <div class="flex gap-1.5 pt-1">
+                        <button onclick="cambiarEstadoTicket(${tk.id}, 'Abierto / Activo')" class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold">Activar</button>
+                        <button onclick="cambiarEstadoTicket(${tk.id}, 'Respondido')" class="bg-amber-600 text-white px-2 py-1 rounded text-[10px] font-bold">Responder</button>
+                        <button onclick="cambiarEstadoTicket(${tk.id}, 'Cerrado')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-bold">Cerrar</button>
+                    </div>
+                </div>
+            `).join('') : '<p class="text-gray-400">No hay tickets.</p>';
+        }
+
+        function cambiarEstadoTicket(id, nuevoEstado) {
+            let tk = ticketsDB.find(t => t.id === id);
+            if(tk) {
+                tk.estado = nuevoEstado;
+                persistirDB();
+                renderizarAdminTickets();
+                if(usuarioSesion && usuarioSesion.rol === 'creador') actualizarDashboardCreador();
+                mostrarToast(`Ticket #${id} actualizado a: ${nuevoEstado}`);
+            }
+        }
+
+        function toggleBloquearTienda(id) {
+            let t = backendTiendasDB.find(x => x.id === id);
+            if(t) {
+                t.bloqueada = !t.bloqueada;
+                persistirDB();
+                cargarTiendasDesdeAPI();
+                renderizarAdminStores();
+                mostrarToast(`Tienda "${t.nombre}" ${t.bloqueada ? 'bloqueada' : 'desbloqueada'}.`);
+            }
+        }
+
+        function toggleCart() { document.getElementById('cart-modal').classList.toggle('hidden'); }
+
+        function agregarAlCarrito(id, nombre, precio, tienda, owner) {
+            let item = carrito.find(x => x.id === id);
+            if(item) item.quantity++;
+            else carrito.push({ id, name: nombre, price: precio, tienda, tiendaOwner: owner, quantity: 1 });
+            localStorage.setItem('smartmall_cart', JSON.stringify(carrito));
+            actualizarCarritoUI();
+            mostrarToast(`"${nombre}" añadido al carrito.`);
+        }
+
+        function actualizarCarritoUI() {
+            const container = document.getElementById('cart-items');
+            if(!container) return;
+            let subtotal = 0, totalIt = 0;
+
+            if(carrito.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 text-sm text-center py-4">Tu carrito está vacío</p>`;
+            } else {
+                container.innerHTML = carrito.map((item, idx) => {
+                    subtotal += item.price * item.quantity;
+                    totalIt += item.quantity;
+                    return `
+                        <div class="flex justify-between items-center text-sm border-b pb-2">
+                            <div>
+                                <p class="font-bold">${item.name}</p>
+                                <p class="text-xs text-gray-500">${item.tienda} • ${formatCLP(item.price)} x ${item.quantity}</p>
+                            </div>
+                            <button onclick="carrito.splice(${idx},1);actualizarCarritoUI();" class="text-red-500 text-xs">Eliminar</button>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('cart-count').innerText = totalIt;
+            document.getElementById('cart-subtotal').innerText = formatCLP(subtotal);
+
+            let descMonto = cuponAplicadoValido ? Math.round(subtotal * 0.05) : 0;
+            if(cuponAplicadoValido) {
+                document.getElementById('fila-descuento-cupon').classList.remove('hidden');
+                document.getElementById('cart-descuento-txt').innerText = `-${formatCLP(descMonto)}`;
+            } else {
+                document.getElementById('fila-descuento-cupon').classList.add('hidden');
+            }
+
+            let totalFinal = Math.max(0, subtotal - descMonto);
+            document.getElementById('cart-total').innerText = formatCLP(totalFinal);
+        }
+
+        function aplicarCuponBienvenidaBanner() {
+            document.getElementById('input-cupon-cliente').value = 'SMARTMALL5';
+            toggleCart();
+            aplicarCuponCliente();
+        }
+
+        function aplicarCuponCliente() {
+            let val = document.getElementById('input-cupon-cliente').value.trim().toUpperCase();
+            if(val === 'SMARTMALL5') {
+                cuponAplicadoValido = true;
+                document.getElementById('cupon-status-txt').classList.remove('hidden');
+                actualizarCarritoUI();
+                mostrarToast('¡Cupón SMARTMALL5 aplicado (-5% OFF)!');
+            } else {
+                cuponAplicadoValido = false;
+                document.getElementById('cupon-status-txt').classList.add('hidden');
+                actualizarCarritoUI();
+                mostrarToast('Cupón inválido.', 'error');
+            }
+        }
+
+        function finalizarCompra() {
+            if(!usuarioSesion || usuarioSesion.rol !== 'cliente') {
+                mostrarToast('Debes iniciar sesión como cliente.', 'error');
+                toggleCart();
+                abrirModalAuth('login');
+                return;
+            }
+            if(carrito.length === 0) { mostrarToast('El carrito está vacío.', 'error'); return; }
+
+            carrito.forEach(item => {
+                let st = backendTiendasDB.find(t => t.ownerEmail === item.tiendaOwner);
+                if(st) {
+                    let pr = st.productos.find(x => x.id === item.id);
+                    if(pr) pr.stock = Math.max(0, pr.stock - item.quantity);
+                }
+
+                ventasDB.push({ fecha: new Date().toLocaleDateString(), tiendaNombre: item.tienda, producto: item.name, total: item.price * item.quantity });
+                
+                pedidosDB.push({
+                    id: Date.now() + Math.floor(Math.random()*1000),
+                    tiendaOwner: item.tiendaOwner,
+                    tiendaNombre: item.tienda,
+                    clienteEmail: usuarioSesion.email,
+                    producto: item.name,
+                    cantidad: item.quantity,
+                    total: item.price * item.quantity,
+                    estado: 'Pendiente de Envío'
+                });
+            });
+
+            persistirDB();
+            carrito = []; cuponAplicadoValido = false; localStorage.removeItem('smartmall_cart');
+            actualizarCarritoUI(); toggleCart();
+            mostrarToast('¡Compra procesada con éxito!');
+            abrirPortalCliente();
+        }
+
+        function abrirPortalCliente() {
+            if(!usuarioSesion || usuarioSesion.rol !== 'cliente') { abrirModalAuth('login'); return; }
+            document.getElementById('vista-catalogo').classList.add('hidden');
+            document.getElementById('products-section').classList.add('hidden');
+            document.getElementById('vista-detalle-producto').classList.add('hidden');
+            document.getElementById('vista-portal-cliente').classList.remove('hidden');
+            document.getElementById('portal-bienvenida-txt').innerText = `Portal de: ${usuarioSesion.nombre}`;
+            renderizarPortalCliente();
+        }
+
+        function renderizarPortalCliente() {
+            let misPedidos = pedidosDB.filter(p => p.clienteEmail === usuarioSesion.email);
+            let activosContainer = document.getElementById('lista-pedidos-activos');
+            let historialContainer = document.getElementById('lista-historial-compras');
+
+            let activos = misPedidos.filter(p => p.estado === 'Pendiente de Envío');
+
+            activosContainer.innerHTML = activos.length ? activos.map(p => `
+                <div class="bg-slate-50 p-3 rounded-xl border text-xs">
+                    <span class="font-bold text-slate-500">Orden #${p.id} • ${p.tiendaNombre}</span>
+                    <p class="text-slate-800 font-semibold mt-1">${p.cantidad}x ${p.producto}</p>
+                    <span class="inline-block mt-2 bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">En preparación</span>
+                </div>
+            `).join('') : '<p class="text-gray-400 text-xs py-2">No tienes pedidos activos.</p>';
+
+            historialContainer.innerHTML = misPedidos.length ? misPedidos.map(p => `
+                <div class="bg-slate-50 p-3 rounded-xl border flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-gray-500 block">${p.fecha} • #${p.id}</span>
+                        <b class="text-slate-900">${p.producto} (${formatCLP(p.total)})</b>
+                        <span class="block text-emerald-600 font-semibold">${p.estado}</span>
+                    </div>
+                    ${p.estado === 'Despachado y Facturado' ? `
+                        <button onclick="descargarBoletaPDF(${p.id})" class="bg-slate-900 text-white px-3 py-1.5 rounded-lg font-bold">
+                            <i class="fa-solid fa-file-pdf text-red-400"></i> PDF
+                        </button>
+                    ` : '<span class="text-gray-400 italic">Emitiendo PDF...</span>'}
+                </div>
+            `).join('') : '<p class="text-gray-400 text-xs py-2">Sin historial de compras.</p>';
+        }
+
+        function enviarPedidoYBoletaPDF(pedidoId) {
+            let ped = pedidosDB.find(o => o.id === pedidoId);
+            if(!ped) return;
+
+            ped.estado = 'Despachado y Facturado';
+            persistirDB();
+            actualizarDashboardCreador();
+            mostrarToast(`Boleta emitida para ${ped.clienteEmail}.`);
+        }
+
+        function descargarBoletaPDF(pedidoId) {
+            let ped = pedidosDB.find(p => p.id === pedidoId);
+            if(!ped) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("SMARTMALL CHILE - BOLETA ELECTRÓNICA", 20, 20);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Fecha: ${ped.fecha}`, 20, 30);
+            doc.text(`Comercio: ${ped.tiendaNombre}`, 20, 36);
+            doc.text(`Cliente: ${ped.clienteEmail}`, 20, 42);
+            doc.line(20, 48, 190, 48);
+            doc.text(`Producto: ${ped.producto} (x${ped.cantidad})`, 20, 56);
+            doc.text(`Total Pagado: ${formatCLP(ped.total)}`, 20, 66);
+            doc.save(`Boleta_SmartMall_${ped.id}.pdf`);
+        }
+    </script>
+</body>
+</html>
