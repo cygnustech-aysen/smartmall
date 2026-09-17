@@ -360,14 +360,7 @@
             { nombre: 'Moda Urbana Stgo', email: 'creador@smartmall.cl', password: '1234', rol: 'creador' }
         ];
 
-        let backendTiendasDB = JSON.parse(localStorage.getItem('smartmall_tiendas')) || [
-            { id: 1, ownerEmail: 'creador@smartmall.cl', nombre: 'Moda Urbana Stgo', localidad: 'Santiago (Centro)', desc: 'Indumentaria juvenil y urbana.', imagen: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&auto=format&fit=crop&q=60', lat: '-33.4489', lng: '-70.6693', bloqueada: false, productos: [
-                {id: 101, nombre: 'Polerón Oversize', descripcion: 'Polerón de algodón 100% perchado con capucha y bolsillo canguro.', precio: 29990, stock: 12, enOferta: true, descuento: 15, categoria: 'Vestuario', imagen: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=60', preguntas: []}
-            ]},
-            { id: 2, ownerEmail: 'stgo2@smartmall.cl', nombre: 'Electro Centro Stgo', localidad: 'Santiago (Centro)', desc: 'Accesorios y carga rápida.', imagen: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&auto=format&fit=crop&q=60', lat: '-33.4450', lng: '-70.6500', bloqueada: false, productos: [
-                {id: 201, nombre: 'PowerBank 20000mAh', descripcion: 'Batería externa con carga ultrarrápida de 22.5W.', precio: 34990, stock: 10, enOferta: true, descuento: 10, categoria: 'Tecnología', imagen: 'https://images.unsplash.com/photo-1609592424148-3f41a49c83a7?w=500&auto=format&fit=crop&q=60', preguntas: []}
-            ]}
-        ];
+        let backendTiendasDB = [];
 
         let carrito = JSON.parse(localStorage.getItem('smartmall_cart')) || [];
         let pedidosDB = JSON.parse(localStorage.getItem('smartmall_pedidos')) || [];
@@ -389,7 +382,6 @@
         });
 
         function persistirDB() {
-            localStorage.setItem('smartmall_tiendas', JSON.stringify(backendTiendasDB));
             localStorage.setItem('smartmall_pedidos', JSON.stringify(pedidosDB));
             localStorage.setItem('smartmall_ventas', JSON.stringify(ventasDB));
             localStorage.setItem('smartmall_tickets', JSON.stringify(ticketsDB));
@@ -518,94 +510,94 @@
             cargarTiendasDesdeAPI();
         }
 
-async function cargarTiendasDesdeAPI() {
-    const filtroInput = document.getElementById('localidad-filtro-input');
-    const filtro = filtroInput ? filtroInput.value.trim().toLowerCase() : '';
-    const container = document.getElementById('stores-container');
-    if(!container) return;
-    container.innerHTML = '<p class="col-span-3 text-center text-gray-500 py-8">Cargando tiendas desde Supabase...</p>';
+        async function cargarTiendasDesdeAPI() {
+            const filtroInput = document.getElementById('localidad-filtro-input');
+            const filtro = filtroInput ? filtroInput.value.trim().toLowerCase() : '';
+            const container = document.getElementById('stores-container');
+            if(!container) return;
+            container.innerHTML = '<p class="col-span-3 text-center text-gray-500 py-8">Cargando tiendas desde Supabase...</p>';
 
-    try {
-        // Consultamos la tabla 'tiendas' y traemos sus productos relacionados
-        let { data: tiendasSupabase, error } = await supabase
-            .from('tiendas')
-            .select(`
-                *,
-                productos (*)
-            `);
+            try {
+                let { data: tiendasSupabase, error } = await supabase
+                    .from('tiendas')
+                    .select(`
+                        *,
+                        productos (*)
+                    `);
 
-        if (error) throw error;
+                if (error) throw error;
 
-        // Si Supabase trae datos, actualizamos nuestro arreglo global
-        if (tiendasSupabase && tiendasSupabase.length > 0) {
-            // Mapeamos los nombres de columnas de Supabase a los que usa tu interfaz
-            backendTiendasDB = tiendasSupabase.map(t => ({
-                id: t.id,
-                ownerEmail: t.owner_email,
-                nombre: t.nombre,
-                localidad: t.localidad,
-                desc: t.descripcion,
-                imagen: t.imagen,
-                lat: t.lat,
-                lng: t.lng,
-                bloqueada: t.bloqueada,
-                productos: (t.productos || []).map(p => ({
-                    id: p.id,
-                    nombre: p.nombre,
-                    descripcion: p.descripcion,
-                    precio: p.precio,
-                    stock: p.stock,
-                    categoria: p.categoria,
-                    enOferta: p.en_oferta,
-                    descuento: p.descuento,
-                    imagen: p.imagen,
-                    preguntas: p.preguntas || []
-                }))
-            }));
-        }
+                if (tiendasSupabase && tiendasSupabase.length > 0) {
+                    backendTiendasDB = tiendasSupabase.map(t => ({
+                        id: t.id,
+                        ownerEmail: t.owner_email,
+                        nombre: t.nombre,
+                        localidad: t.localidad,
+                        desc: t.descripcion,
+                        imagen: t.imagen,
+                        lat: t.lat,
+                        lng: t.lng,
+                        bloqueada: t.bloqueada,
+                        productos: (t.productos || []).map(p => ({
+                            id: p.id,
+                            nombre: p.nombre,
+                            descripcion: p.descripcion,
+                            precio: p.precio,
+                            stock: p.stock,
+                            categoria: p.categoria,
+                            enOferta: p.en_oferta,
+                            descuento: p.descuento,
+                            imagen: p.imagen,
+                            preguntas: p.preguntas || []
+                        }))
+                    }));
+                } else {
+                    backendTiendasDB = [];
+                }
 
-        container.innerHTML = '';
-        let res = backendTiendasDB.filter(t => !t.bloqueada && (!filtro || filtro === 'todas las ciudades' || t.localidad.toLowerCase().includes(filtro)));
-        
-        if(res.length === 0) {
-            container.innerHTML = `<p class="col-span-3 text-center text-gray-500 py-8">No hay tiendas en esta localidad o se encuentran inactivas.</p>`;
-            return;
-        }
+                container.innerHTML = '';
+                let res = backendTiendasDB.filter(t => !t.bloqueada && (!filtro || filtro === 'todas las ciudades' || t.localidad.toLowerCase().includes(filtro)));
+                
+                if(res.length === 0) {
+                    container.innerHTML = `<p class="col-span-3 text-center text-gray-500 py-8">No hay tiendas en esta localidad o se encuentran inactivas.</p>`;
+                    return;
+                }
 
-        res.forEach(t => {
-            container.innerHTML += `
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col justify-between">
-                    <div>
-                        <div class="h-40 relative"><img src="${t.imagen}" class="w-full h-full object-cover"><span class="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full">Activa (${t.productos.length} prod)</span></div>
-                        <div class="p-4">
-                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">${t.localidad}</span>
-                            <h3 class="font-bold text-lg mt-1">${t.nombre}</h3>
-                            <p class="text-slate-600 text-sm mb-2">${t.desc}</p>
-                            <button onclick="abrirMapaGoogle('${t.lat || '-33.4489'}', '${t.lng || '-70.6693'}', '${t.nombre}')" class="text-xs text-amber-600 font-bold hover:underline flex items-center gap-1">
-                                <i class="fa-solid fa-map-location-dot"></i> Ver en Google Maps
-                            </button>
+                res.forEach(t => {
+                    container.innerHTML += `
+                        <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col justify-between">
+                            <div>
+                                <div class="h-40 relative"><img src="${t.imagen}" class="w-full h-full object-cover"><span class="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full">Activa (${t.productos.length} prod)</span></div>
+                                <div class="p-4">
+                                    <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">${t.localidad}</span>
+                                    <h3 class="font-bold text-lg mt-1">${t.nombre}</h3>
+                                    <p class="text-slate-600 text-sm mb-2">${t.desc}</p>
+                                    <button onclick="abrirMapaGoogle('${t.lat || '-33.4489'}', '${t.lng || '-70.6693'}', '${t.nombre}')" class="text-xs text-amber-600 font-bold hover:underline flex items-center gap-1">
+                                        <i class="fa-solid fa-map-location-dot"></i> Ver en Google Maps
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-4 pt-0"><button onclick="verProductos(${t.id})" class="w-full bg-slate-900 text-white py-2 rounded text-sm font-semibold">Ver Catálogo</button></div>
                         </div>
-                    </div>
-                    <div class="p-4 pt-0"><button onclick="verProductos(${t.id})" class="w-full bg-slate-900 text-white py-2 rounded text-sm font-semibold">Ver Catálogo</button></div>
-                </div>
-            `;
-        });
+                    `;
+                });
 
-        document.getElementById('admin-count-tiendas').innerText = backendTiendasDB.length;
-        document.getElementById('admin-count-ciudades').innerText = ciudadesDB.length;
-        let gmvTotal = ventasDB.reduce((acc, v) => acc + v.total, 0);
-        document.getElementById('admin-count-gmv').innerText = formatCLP(gmvTotal);
+                document.getElementById('admin-count-tiendas').innerText = backendTiendasDB.length;
+                document.getElementById('admin-count-ciudades').innerText = ciudadesDB.length;
+                let gmvTotal = ventasDB.reduce((acc, v) => acc + v.total, 0);
+                document.getElementById('admin-count-gmv').innerText = formatCLP(gmvTotal);
 
-        if(usuarioSesion && usuarioSesion.rol === 'admin') {
-            renderizarAdminStores();
-            renderizarAdminTickets();
+                if(usuarioSesion && usuarioSesion.rol === 'admin') {
+                    renderizarAdminStores();
+                    renderizarAdminTickets();
+                }
+
+            } catch (err) {
+                console.error("Error al sincronizar con Supabase:", err.message);
+                mostrarToast('Error al conectar con la base de datos', 'error');
+            }
         }
 
-    } catch (err) {
-        console.error("Error al sincronizar con Supabase:", err.message);
-        mostrarToast('Error al conectar con la base de datos', 'error');
-    }
-}
         function verProductos(id) {
             let t = backendTiendasDB.find(x => x.id === id);
             document.getElementById('vista-catalogo').classList.add('hidden');
@@ -844,21 +836,25 @@ async function cargarTiendasDesdeAPI() {
             document.getElementById('creator-content-area').classList.remove('hidden');
         }
 
-        function apiGuardarTiendaCreador(e) {
+        async function apiGuardarTiendaCreador(e) {
             e.preventDefault();
             let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
             let d = {
                 nombre: document.getElementById('nombre-tienda').value,
                 localidad: document.getElementById('localidad-tienda').value,
-                desc: document.getElementById('desc-tienda').value,
+                descripcion: document.getElementById('desc-tienda').value,
                 lat: document.getElementById('lat-tienda').value,
                 lng: document.getElementById('lng-tienda').value,
                 imagen: document.getElementById('imagen-tienda').value,
                 bloqueada: false
             };
-            if(tp) Object.assign(tp, d);
-            else backendTiendasDB.push({ id: Date.now(), ownerEmail: usuarioSesion.email, productos: [], ...d });
-            persistirDB(); cargarTiendasDesdeAPI(); verificarTiendaCreador();
+            if(tp) {
+                await supabase.from('tiendas').update(d).eq('id', tp.id);
+            } else {
+                await supabase.from('tiendas').insert([{ owner_email: usuarioSesion.email, ...d }]);
+            }
+            cargarTiendasDesdeAPI(); 
+            verificarTiendaCreador();
             mostrarToast('Tienda guardada con éxito.');
         }
 
@@ -868,37 +864,43 @@ async function cargarTiendasDesdeAPI() {
             if(chk) campos.classList.remove('hidden'); else campos.classList.add('hidden');
         }
 
-        function apiCrearProductoCreador(e) {
+        async function apiCrearProductoCreador(e) {
             e.preventDefault();
             let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
             if(!tp) { mostrarToast('Registra tu tienda primero.', 'error'); return; }
 
             let enOferta = document.getElementById('check-oferta').checked;
-            let nuevoProd = {
-                id: Date.now(),
+            let nuevoProdDB = {
+                tienda_id: tp.id,
                 nombre: document.getElementById('nombre-producto').value,
                 descripcion: document.getElementById('desc-producto').value,
                 precio: parseInt(document.getElementById('precio-producto').value),
                 stock: parseInt(document.getElementById('stock-producto').value),
                 categoria: document.getElementById('categoria-producto').value,
-                enOferta: enOferta,
+                en_oferta: enOferta,
                 descuento: enOferta ? parseInt(document.getElementById('descuento-producto').value || 0) : 0,
                 imagen: document.getElementById('imagen-producto').value,
                 preguntas: []
             };
 
-            tp.productos.push(nuevoProd);
-            persistirDB(); cargarTiendasDesdeAPI(); verificarTiendaCreador();
+            let { error } = await supabase.from('productos').insert([nuevoProdDB]);
+            if(error) {
+                mostrarToast('Error al publicar producto', 'error');
+                return;
+            }
+
+            cargarTiendasDesdeAPI(); 
+            verificarTiendaCreador();
             mostrarToast('Producto publicado.');
             document.getElementById('form-crear-producto').reset();
             document.getElementById('campos-oferta').classList.add('hidden');
         }
 
-        function eliminarProductoCreador(prodId) {
-            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
-            if(tp) {
-                tp.productos = tp.productos.filter(p => p.id !== prodId);
-                persistirDB(); cargarTiendasDesdeAPI(); verificarTiendaCreador();
+        async function eliminarProductoCreador(prodId) {
+            let { error } = await supabase.from('productos').delete().eq('id', prodId);
+            if(!error) {
+                cargarTiendasDesdeAPI(); 
+                verificarTiendaCreador();
                 mostrarToast('Producto eliminado.');
             }
         }
@@ -1020,11 +1022,11 @@ async function cargarTiendasDesdeAPI() {
             }
         }
 
-        function toggleBloquearTienda(id) {
+        async function toggleBloquearTienda(id) {
             let t = backendTiendasDB.find(x => x.id === id);
             if(t) {
                 t.bloqueada = !t.bloqueada;
-                persistirDB();
+                await supabase.from('tiendas').update({ bloqueada: t.bloqueada }).eq('id', id);
                 cargarTiendasDesdeAPI();
                 renderizarAdminStores();
                 mostrarToast(`Tienda "${t.nombre}" ${t.bloqueada ? 'bloqueada' : 'desbloqueada'}.`);
@@ -1111,12 +1113,6 @@ async function cargarTiendasDesdeAPI() {
             if(carrito.length === 0) { mostrarToast('El carrito está vacío.', 'error'); return; }
 
             carrito.forEach(item => {
-                let st = backendTiendasDB.find(t => t.ownerEmail === item.tiendaOwner);
-                if(st) {
-                    let pr = st.productos.find(x => x.id === item.id);
-                    if(pr) pr.stock = Math.max(0, pr.stock - item.quantity);
-                }
-
                 ventasDB.push({ fecha: new Date().toLocaleDateString(), tiendaNombre: item.tienda, producto: item.name, total: item.price * item.quantity });
                 
                 pedidosDB.push({
