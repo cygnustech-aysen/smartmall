@@ -758,34 +758,39 @@
             if(usuarioSesion && usuarioSesion.rol === 'admin') document.getElementById('admin-dashboard').classList.remove('hidden');
         }
 
-        function abrirModalAuth(tipo) {
-            document.getElementById('auth-modal').classList.remove('hidden');
-            const infoBox = document.getElementById('login-info-box');
-            
-            if(tipo === 'cliente') {
-                document.getElementById('auth-title').innerText = 'Ingreso de Clientes';
-                infoBox.innerHTML = 'Accede para gestionar tus compras y boletas.';
-                document.getElementById('form-login').classList.remove('hidden');
-                document.getElementById('form-registro').classList.add('hidden');
-                document.getElementById('div-link-registro').classList.remove('hidden');
-            } else if(tipo === 'creador') {
-                document.getElementById('auth-title').innerText = 'Acceso de Creadores y Tiendas';
-                infoBox.innerHTML = 'Ingresa con tu cuenta de creador para administrar tu inventario.';
-                document.getElementById('form-login').classList.remove('hidden');
-                document.getElementById('form-registro').classList.add('hidden');
-                document.getElementById('div-link-registro').classList.add('hidden');
-            } else if(tipo === 'admin') {
-                document.getElementById('auth-title').innerText = 'Acceso Restringido - Administrador';
-                infoBox.innerHTML = 'Panel exclusivo de supervisión general.';
-                document.getElementById('form-login').classList.remove('hidden');
-                document.getElementById('form-registro').classList.add('hidden');
-                document.getElementById('div-link-registro').classList.add('hidden');
-            } else {
-                document.getElementById('auth-title').innerText = 'Registro en SmartMall';
-                document.getElementById('form-login').classList.add('hidden');
-                document.getElementById('form-registro').classList.remove('hidden');
-            }
-        }
+function abrirModalAuth(tipo) {
+    document.getElementById('auth-modal').classList.remove('hidden');
+    const infoBox = document.getElementById('login-info-box');
+    const linkRegistroDiv = document.getElementById('div-link-registro');
+    
+    if(tipo === 'cliente') {
+        document.getElementById('auth-title').innerText = 'Ingreso de Clientes';
+        infoBox.innerHTML = 'Accede para gestionar tus compras y boletas.';
+        document.getElementById('form-login').classList.remove('hidden');
+        document.getElementById('form-registro').classList.add('hidden');
+        linkRegistroDiv.innerHTML = '<button type="button" onclick="cambiarModoAuth(\'registro\')" class="text-xs text-blue-600 hover:underline">¿No tienes cuenta de cliente? Regístrate aquí</button>';
+        linkRegistroDiv.classList.remove('hidden');
+    } else if(tipo === 'creador') {
+        document.getElementById('auth-title').innerText = 'Acceso de Creadores y Tiendas';
+        infoBox.innerHTML = 'Ingresa con tu cuenta de creador para administrar tu inventario.';
+        document.getElementById('form-login').classList.remove('hidden');
+        document.getElementById('form-registro').classList.add('hidden');
+        // AQUÍ AGREGAMOS LA SUGERENCIA DE REGISTRO PARA CREADORES
+        linkRegistroDiv.innerHTML = '<button type="button" onclick="abrirModalAuth(\'registro\'); document.getElementById(\'reg-rol\').value=\'creador\';" class="text-xs text-amber-700 font-bold hover:underline">¿Quieres registrar tu tienda? Regístrate como Creador aquí</button>';
+        linkRegistroDiv.classList.remove('hidden');
+    } else if(tipo === 'admin') {
+        document.getElementById('auth-title').innerText = 'Acceso Restringido - Administrador';
+        infoBox.innerHTML = 'Panel exclusivo de supervisión general.';
+        document.getElementById('form-login').classList.remove('hidden');
+        document.getElementById('form-registro').classList.add('hidden');
+        linkRegistroDiv.classList.add('hidden');
+    } else {
+        document.getElementById('auth-title').innerText = 'Registro en SmartMall';
+        document.getElementById('form-login').classList.add('hidden');
+        document.getElementById('form-registro').classList.remove('hidden');
+        linkRegistroDiv.classList.add('hidden');
+    }
+}
         function cerrarModalAuth() { document.getElementById('auth-modal').classList.add('hidden'); }
         function cambiarModoAuth(m) { abrirModalAuth(m); }
 
