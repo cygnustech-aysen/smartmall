@@ -719,79 +719,87 @@
         function cerrarModalAuth() { document.getElementById('auth-modal').classList.add('hidden'); }
         function cambiarModoAuth(m) { abrirModalAuth(m); }
 
-        function procesarLogin(e) {
-            e.preventDefault();
-            let email = document.getElementById('login-email').value.trim();
-            let pass = document.getElementById('login-password').value.trim();
+async function procesarLogin(e) {
+    e.preventDefault();
+    let email = document.getElementById('login-email').value.trim();
+    let pass = document.getElementById('login-password').value.trim();
 
-            let u = usuariosDB.find(x => x.email === email && x.password === pass);
-            if(u) {
-                usuarioSesion = { ...u };
-                localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
-                cerrarModalAuth();
-                aplicarEstadoSesion(usuarioSesion);
-                mostrarToast(`¡Bienvenido de nuevo, ${u.nombre}!`);
-                return;
-            }
+    // Permitir acceso rápido a las cuentas de prueba institucionales (Admin y Creador)
+    let uDefault = usuariosDB.find(x => x.email === email && x.password === pass);
+    if(uDefault) {
+        usuarioSesion = { ...uDefault };
+        localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
+        cerrarModalAuth();
+        aplicarEstadoSesion(usuarioSesion);
+        mostrarToast(`¡Bienvenido de nuevo, ${uDefault.nombre}!`);
+        return;
+    }
 
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(function(res) {
-                        if(res.success) {
-                            usuarioSesion = res;
-                            localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
-                            cerrarModalAuth();
-                            aplicarEstadoSesion(usuarioSesion);
-                            mostrarToast(`¡Bienvenido, ${res.nombre}!`);
-                            abrirPortalCliente();
-                        } else {
-                            mostrarToast(res.message, 'error');
-                        }
-                    })
-                    .iniciarSesionReal(email, pass);
-            } else {
-                mostrarToast('Entorno de Apps Script no disponible localmente.', 'error');
+    // Login real con Supabase Auth para Clientes
+    let { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: pass
+    });
+
+    if (error) {
+        mostrarToast('Error al iniciar sesión: ' + error.message, 'error');
+        return;
+    }
+
+    if (data.user) {
+        let meta = data.user.user_metadata || {};
+        usuarioSesion = {
+            nombre: meta.nombre_completo || data.user.email,
+            email: data.user.email,
+            rol: meta.rol || 'cliente'
+        };
+        localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
+        cerrarModalAuth();
+        aplicarEstadoSesion(usuarioSesion);
+        mostrarToast(`¡Bienvenido, ${usuarioSesion.nombre}!`);
+        abrirPortalCliente();
+    }
+}
+
+async function procesarRegistroClienteReal(e) {
+    e.preventDefault();
+    let nombre = document.getElementById('reg-nombre').value.trim();
+    let email = document.getElementById('reg-email').value.trim();
+    let password = document.getElementById('reg-password').value.trim();
+    let btn = document.getElementById('btn-submit-reg');
+
+    btn.innerText = 'Registrando y enviando correo...';
+    btn.disabled = true;
+
+    try {
+        // Llamada oficial a Supabase Auth para enviar correo de verificación real
+        let { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: { nombre_completo: nombre, rol: 'cliente' }
             }
+        });
+
+        btn.innerText = 'Registrarse y Enviar Correo Real';
+        btn.disabled = false;
+
+        if (error) {
+            throw error;
         }
 
-        function procesarRegistroClienteReal(e) {
-            e.preventDefault();
-            let nombre = document.getElementById('reg-nombre').value.trim();
-            let email = document.getElementById('reg-email').value.trim();
-            let password = document.getElementById('reg-password').value.trim();
-            let btn = document.getElementById('btn-submit-reg');
+        cerrarModalAuth();
+        mostrarToast(`¡Registro exitoso! Se ha enviado un correo de confirmación a ${email}. Por favor verifica tu bandeja.`);
+        
+        // Limpiar formulario
+        document.getElementById('form-registro').reset();
 
-            btn.innerText = 'Enviando correo real de verificación...';
-            btn.disabled = true;
-
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(function(res) {
-                        btn.innerText = 'Registrarse y Enviar Correo Real';
-                        btn.disabled = false;
-                        if(res.success) {
-                            cerrarModalAuth();
-                            mostrarToast(`¡Correo de verificación enviado a ${email}!`);
-                            usuarioSesion = res;
-                            localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
-                            aplicarEstadoSesion(usuarioSesion);
-                            abrirPortalCliente();
-                        } else {
-                            mostrarToast(res.message, 'error');
-                        }
-                    })
-                    .withFailureHandler(function(err) {
-                        btn.innerText = 'Registrarse y Enviar Correo Real';
-                        btn.disabled = false;
-                        mostrarToast('Error de ejecución en servidor: ' + err.message, 'error');
-                    })
-                    .registrarClienteReal(nombre, email, password);
-            } else {
-                btn.innerText = 'Registrarse y Enviar Correo Real';
-                btn.disabled = false;
-                mostrarToast('La función de correo real requiere estar desplegado en Google Apps Script.', 'error');
-            }
-        }
+    } catch (err) {
+        btn.innerText = 'Registrarse y Enviar Correo Real';
+        btn.disabled = false;
+        mostrarToast('Error en el registro: ' + err.message, 'error');
+    }
+}
 
         function cerrarSesion() {
             usuarioSesion = null;
