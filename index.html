@@ -951,37 +951,43 @@
         }
 
         async function apiCrearProductoCreador(e) {
-            e.preventDefault();
-            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
-            if(!tp) { mostrarToast('Registra tu tienda primero.', 'error'); return; }
+    e.preventDefault();
+    
+    // Buscar la tienda que pertenece al correo actual del creador en la base de datos cargada
+    let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
+    
+    if(!tp) {
+        mostrarToast('Primero debes guardar o registrar tu tienda en el formulario de la izquierda.', 'error');
+        return;
+    }
 
-            let enOferta = document.getElementById('check-oferta').checked;
-            let nuevoProdDB = {
-                tienda_id: tp.id,
-                nombre: document.getElementById('nombre-producto').value,
-                descripcion: document.getElementById('desc-producto').value,
-                precio: parseInt(document.getElementById('precio-producto').value),
-                stock: parseInt(document.getElementById('stock-producto').value),
-                categoria: document.getElementById('categoria-producto').value,
-                en_oferta: enOferta,
-                descuento: enOferta ? parseInt(document.getElementById('descuento-producto').value || 0) : 0,
-                imagen: document.getElementById('imagen-producto').value,
-                preguntas: []
-            };
+    let enOferta = document.getElementById('check-oferta').checked;
+    let nuevoProdDB = {
+        tienda_id: parseInt(tp.id),
+        nombre: document.getElementById('nombre-producto').value.trim(),
+        descripcion: document.getElementById('desc-producto').value.trim(),
+        precio: parseInt(document.getElementById('precio-producto').value),
+        stock: parseInt(document.getElementById('stock-producto').value),
+        categoria: document.getElementById('categoria-producto').value,
+        en_oferta: enOferta,
+        descuento: enOferta ? parseInt(document.getElementById('descuento-producto').value || 0) : 0,
+        imagen: document.getElementById('imagen-producto').value.trim(),
+        preguntas: []
+    };
 
-            let { error } = await supabase.from('productos').insert([nuevoProdDB]);
-            if(error) {
-                mostrarToast('Error al publicar producto', 'error');
-                return;
-            }
+    let { error } = await supabase.from('productos').insert([nuevoProdDB]);
+    if(error) {
+        console.error("Error Supabase:", error.message);
+        mostrarToast('Error al publicar producto: ' + error.message, 'error');
+        return;
+    }
 
-            cargarTiendasDesdeAPI(); 
-            verificarTiendaCreador();
-            mostrarToast('Producto publicado.');
-            document.getElementById('form-crear-producto').reset();
-            document.getElementById('campos-oferta').classList.add('hidden');
-        }
-
+    await cargarTiendasDesdeAPI(); 
+    verificarTiendaCreador();
+    mostrarToast('¡Producto publicado con éxito!');
+    document.getElementById('form-crear-producto').reset();
+    document.getElementById('campos-oferta').classList.add('hidden');
+}
         async function eliminarProductoCreador(prodId) {
             let { error } = await supabase.from('productos').delete().eq('id', prodId);
             if(!error) {
