@@ -97,17 +97,17 @@
         <div id="creator-dashboard" class="hidden bg-white rounded-2xl shadow-md p-6 mb-8 border-l-4 border-amber-500">
             <div class="flex flex-wrap justify-between items-center border-b pb-4 mb-4">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-store text-amber-500"></i> Panel de tu Tienda y Soporte (Tickets)</h2>
-                    <p class="text-xs text-gray-500">Administra productos, stock, boletas y abre tickets de asistencia técnica.</p>
+                    <h2 class="text-xl font-bold text-slate-900"><i class="fa-solid fa-store text-amber-500"></i> Panel de tus Tiendas y Soporte</h2>
+                    <p class="text-xs text-gray-500">Crea nuevas tiendas, administra productos, stock y abre tickets de asistencia.</p>
                 </div>
                 <div class="bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 flex items-center gap-2">
-                    <i class="fa-solid fa-shield-check"></i> Tienda Verificada
+                    <i class="fa-solid fa-shield-check"></i> Creador Verificado
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 <div class="bg-slate-50 p-4 rounded-xl border">
-                    <span class="text-xs text-slate-500 font-medium">Ventas Totales Tienda</span>
+                    <span class="text-xs text-slate-500 font-medium">Ventas Totales de tus Tiendas</span>
                     <p id="creator-fin-ventas" class="text-2xl font-black text-slate-900">$0 CLP</p>
                 </div>
                 <div class="bg-slate-50 p-4 rounded-xl border">
@@ -116,60 +116,54 @@
                 </div>
             </div>
 
-            <div id="creator-no-store" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-xl mb-6 text-center">
-                <p class="text-sm text-amber-800 font-semibold mb-2">Registra los datos de tu tienda para comenzar.</p>
-                <button onclick="mostrarFormTienda()" class="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded text-xs">Registrar Mi Tienda</button>
-            </div>
-
-            <div id="creator-content-area" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- REGISTRAR NUEVA TIENDA -->
                 <div class="bg-slate-50 p-4 rounded-xl border">
-                    <h3 class="font-bold text-sm text-slate-800 mb-3"><i class="fa-solid fa-map-location-dot text-amber-600"></i> Datos y Coordenadas de Tienda</h3>
-                    <form id="form-crear-tienda" onsubmit="apiGuardarTiendaCreador(event)" class="space-y-3">
-                        <input type="text" id="nombre-tienda" placeholder="Nombre de tienda" required class="w-full bg-white border rounded p-2 text-sm">
+                    <h3 class="font-bold text-sm text-slate-800 mb-3"><i class="fa-solid fa-plus-circle text-amber-600"></i> Registrar una Nueva Tienda</h3>
+                    <form id="form-crear-tienda" onsubmit="apiCrearNuevaTienda(event)" class="space-y-3">
+                        <input type="text" id="nombre-tienda" placeholder="Nombre de la nueva tienda" required class="w-full bg-white border rounded p-2 text-sm">
                         <input list="lista-ciudades-form" id="localidad-tienda" required placeholder="Selecciona ciudad..." class="w-full bg-white border rounded p-2 text-sm">
                         <datalist id="lista-ciudades-form"></datalist>
                         <input type="text" id="desc-tienda" placeholder="Descripción breve" required class="w-full bg-white border rounded p-2 text-sm">
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="lat-tienda" placeholder="Latitud (ej: -33.4489)" required class="bg-white border rounded p-2 text-xs">
-                            <input type="text" id="lng-tienda" placeholder="Longitud (ej: -70.6693)" required class="bg-white border rounded p-2 text-xs">
+                            <input type="text" id="lat-tienda" placeholder="Latitud (ej: -33.4489)" required class="bg-white border rounded p-2 text-xs" value="-33.4489">
+                            <input type="text" id="lng-tienda" placeholder="Longitud (ej: -70.6693)" required class="bg-white border rounded p-2 text-xs" value="-70.6693">
                         </div>
                         <input type="url" id="imagen-tienda" placeholder="URL Logo / Imagen" required class="w-full bg-white border rounded p-2 text-sm">
-                        <button type="submit" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded text-sm shadow">Guardar Cambios Tienda</button>
+                        <button type="submit" class="w-full bg-amber-500 text-slate-950 font-bold py-2 rounded text-sm shadow">Crear Nueva Tienda</button>
                     </form>
                 </div>
 
+                <!-- AGREGAR PRODUCTO -->
                 <div class="bg-slate-50 p-4 rounded-xl border">
                     <h3 class="font-bold text-sm text-slate-800 mb-3"><i class="fa-solid fa-box-open text-amber-600"></i> Agregar Producto al Inventario</h3>
                     <form id="form-crear-producto" onsubmit="apiCrearProductoCreador(event)" class="space-y-3">
+                        <select id="select-tienda-producto" required class="w-full bg-white border rounded p-2 text-sm">
+                            <option value="">Selecciona tu Tienda...</option>
+                        </select>
                         <input type="text" id="nombre-producto" placeholder="Nombre del producto" required class="w-full bg-white border rounded p-2 text-sm">
-                        <textarea id="desc-producto" placeholder="Descripción detallada del producto..." required class="w-full bg-white border rounded p-2 text-xs h-16"></textarea>
-                        <input type="number" id="precio-producto" placeholder="Precio normal en CLP" required class="w-full bg-white border rounded p-2 text-sm">
-                        <input type="number" id="stock-producto" placeholder="Stock disponible" required class="w-full bg-white border rounded p-2 text-sm">
+                        <textarea id="desc-producto" placeholder="Descripción detallada..." required class="w-full bg-white border rounded p-2 text-xs h-12"></textarea>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="number" id="precio-producto" placeholder="Precio CLP" required class="bg-white border rounded p-2 text-sm">
+                            <input type="number" id="stock-producto" placeholder="Stock" required class="bg-white border rounded p-2 text-sm">
+                        </div>
                         <select id="categoria-producto" required class="w-full bg-white border rounded p-2 text-sm">
-                            <option value="">Selecciona Categoría...</option>
+                            <option value="">Categoría...</option>
                             <option value="Vestuario">Vestuario</option>
                             <option value="Tecnología">Tecnología</option>
                             <option value="Gourmet">Gourmet</option>
                             <option value="Outdoor">Outdoor</option>
                         </select>
-                        <div class="bg-amber-50 p-2.5 rounded border border-amber-200 space-y-2">
-                            <label class="flex items-center gap-2 text-xs font-bold text-amber-900 cursor-pointer">
-                                <input type="checkbox" id="check-oferta" onchange="toggleCamposOferta()"> ¿En Oferta?
-                            </label>
-                            <div id="campos-oferta" class="hidden">
-                                <input type="number" id="descuento-producto" placeholder="% Descuento" class="w-full bg-white border rounded p-1.5 text-xs">
-                            </div>
-                        </div>
                         <input type="url" id="imagen-producto" placeholder="URL Imagen producto" required class="w-full bg-white border rounded p-2 text-sm">
                         <button type="submit" class="w-full bg-slate-900 text-white font-bold py-2 rounded text-sm shadow">Publicar Producto</button>
                     </form>
                 </div>
             </div>
 
-            <!-- Inventario, Pedidos y Soporte -->
+            <!-- Listados de Inventario, Pedidos y Soporte -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t pt-6">
                 <div>
-                    <h3 class="font-bold text-slate-900 mb-3 text-sm"><i class="fa-solid fa-boxes-stacked text-amber-600"></i> Mi Inventario</h3>
+                    <h3 class="font-bold text-slate-900 mb-3 text-sm"><i class="fa-solid fa-boxes-stacked text-amber-600"></i> Mis Tiendas e Inventario</h3>
                     <div id="creator-my-products" class="space-y-2 max-h-48 overflow-y-auto text-xs bg-slate-50 p-3 rounded border"></div>
                 </div>
                 <div>
@@ -195,7 +189,7 @@
             <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
                 <div>
                     <h2 class="text-xl font-bold"><i class="fa-solid fa-gauge-high text-blue-400"></i> Panel de Administración General</h2>
-                    <p class="text-xs text-slate-400">Supervisión, GMV, control de tiendas y gestión de tickets de creadores.</p>
+                    <p class="text-xs text-slate-400">Supervisión, GMV, creación de tiendas y control de la red.</p>
                 </div>
                 <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">SuperAdmin</span>
             </div>
@@ -204,6 +198,19 @@
                 <div class="bg-slate-800 p-4 rounded-xl border border-slate-700"><span class="text-xs text-slate-400">Tiendas Activas</span><p id="admin-count-tiendas" class="text-2xl font-black text-amber-400">0</p></div>
                 <div class="bg-slate-800 p-4 rounded-xl border border-slate-700"><span class="text-xs text-slate-400">Ciudades en Red</span><p id="admin-count-ciudades" class="text-2xl font-black text-emerald-400">0</p></div>
                 <div class="bg-slate-800 p-4 rounded-xl border border-slate-700"><span class="text-xs text-slate-400">GMV (Ventas Totales)</span><p id="admin-count-gmv" class="text-2xl font-black text-blue-400">$0 CLP</p></div>
+            </div>
+
+            <!-- FORMULARIO ADMIN PARA CREAR TIENDA -->
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-6">
+                <h3 class="font-bold text-sm mb-3 text-emerald-400"><i class="fa-solid fa-store"></i> Crear Nueva Tienda como Administrador</h3>
+                <form onsubmit="apiAdminCrearTienda(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <input type="email" id="admin-tienda-owner" placeholder="Correo del Dueño / Creador" required class="bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white">
+                    <input type="text" id="admin-tienda-nombre" placeholder="Nombre de la tienda" required class="bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white">
+                    <input type="text" id="admin-tienda-localidad" placeholder="Ciudad / Comuna" required class="bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white">
+                    <input type="text" id="admin-tienda-desc" placeholder="Descripción breve" required class="bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white">
+                    <input type="url" id="admin-tienda-imagen" placeholder="URL de la Imagen" required class="bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded text-xs">Registrar Tienda Global</button>
+                </form>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -592,6 +599,10 @@
                     renderizarAdminTickets();
                 }
 
+                if(usuarioSesion && usuarioSesion.rol === 'creador') {
+                    actualizarDashboardCreador();
+                }
+
             } catch (err) {
                 console.error("Error al sincronizar con Supabase:", err.message);
                 mostrarToast('Error al conectar con la base de datos', 'error');
@@ -805,7 +816,7 @@
 
             if(u.rol === 'creador') {
                 document.getElementById('creator-dashboard').classList.remove('hidden');
-                verificarTiendaCreador();
+                actualizarDashboardCreador();
             } else if(u.rol === 'admin') {
                 document.getElementById('admin-dashboard').classList.remove('hidden');
                 renderizarAdminStores();
@@ -813,33 +824,10 @@
             }
         }
 
-        function verificarTiendaCreador() {
-            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
-            if(tp) {
-                document.getElementById('creator-no-store').classList.add('hidden');
-                document.getElementById('creator-content-area').classList.remove('hidden');
-                document.getElementById('nombre-tienda').value = tp.nombre;
-                document.getElementById('localidad-tienda').value = tp.localidad;
-                document.getElementById('desc-tienda').value = tp.desc;
-                document.getElementById('lat-tienda').value = tp.lat || '-33.4489';
-                document.getElementById('lng-tienda').value = tp.lng || '-70.6693';
-                document.getElementById('imagen-tienda').value = tp.imagen;
-            } else {
-                document.getElementById('creator-no-store').classList.remove('hidden');
-                document.getElementById('creator-content-area').classList.add('hidden');
-            }
-            actualizarDashboardCreador();
-        }
-
-        function mostrarFormTienda() {
-            document.getElementById('creator-no-store').classList.add('hidden');
-            document.getElementById('creator-content-area').classList.remove('hidden');
-        }
-
-        async function apiGuardarTiendaCreador(e) {
+        async function apiCrearNuevaTienda(e) {
             e.preventDefault();
-            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
             let d = {
+                owner_email: usuarioSesion.email,
                 nombre: document.getElementById('nombre-tienda').value,
                 localidad: document.getElementById('localidad-tienda').value,
                 descripcion: document.getElementById('desc-tienda').value,
@@ -848,37 +836,56 @@
                 imagen: document.getElementById('imagen-tienda').value,
                 bloqueada: false
             };
-            if(tp) {
-                await supabase.from('tiendas').update(d).eq('id', tp.id);
-            } else {
-                await supabase.from('tiendas').insert([{ owner_email: usuarioSesion.email, ...d }]);
+
+            let { error } = await supabase.from('tiendas').insert([d]);
+            if(error) {
+                mostrarToast('Error al registrar la nueva tienda', 'error');
+                return;
             }
-            cargarTiendasDesdeAPI(); 
-            verificarTiendaCreador();
-            mostrarToast('Tienda guardada con éxito.');
+
+            await cargarTiendasDesdeAPI();
+            mostrarToast('¡Nueva tienda creada con éxito!');
+            document.getElementById('form-crear-tienda').reset();
         }
 
-        function toggleCamposOferta() {
-            let chk = document.getElementById('check-oferta').checked;
-            let campos = document.getElementById('campos-oferta');
-            if(chk) campos.classList.remove('hidden'); else campos.classList.add('hidden');
+        async function apiAdminCrearTienda(e) {
+            e.preventDefault();
+            let d = {
+                owner_email: document.getElementById('admin-tienda-owner').value.trim(),
+                nombre: document.getElementById('admin-tienda-nombre').value.trim(),
+                localidad: document.getElementById('admin-tienda-localidad').value.trim(),
+                descripcion: document.getElementById('admin-tienda-desc').value.trim(),
+                imagen: document.getElementById('admin-tienda-imagen').value.trim(),
+                lat: '-33.4489',
+                lng: '-70.6693',
+                bloqueada: false
+            };
+
+            let { error } = await supabase.from('tiendas').insert([d]);
+            if(error) {
+                mostrarToast('Error al registrar tienda desde admin', 'error');
+                return;
+            }
+
+            await cargarTiendasDesdeAPI();
+            mostrarToast('¡Tienda creada por Administrador con éxito!');
+            e.target.reset();
         }
 
         async function apiCrearProductoCreador(e) {
             e.preventDefault();
-            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
-            if(!tp) { mostrarToast('Registra tu tienda primero.', 'error'); return; }
+            let tiendaId = document.getElementById('select-tienda-producto').value;
+            if(!tiendaId) { mostrarToast('Selecciona una tienda.', 'error'); return; }
 
-            let enOferta = document.getElementById('check-oferta').checked;
             let nuevoProdDB = {
-                tienda_id: tp.id,
+                tienda_id: parseInt(tiendaId),
                 nombre: document.getElementById('nombre-producto').value,
                 descripcion: document.getElementById('desc-producto').value,
                 precio: parseInt(document.getElementById('precio-producto').value),
                 stock: parseInt(document.getElementById('stock-producto').value),
                 categoria: document.getElementById('categoria-producto').value,
-                en_oferta: enOferta,
-                descuento: enOferta ? parseInt(document.getElementById('descuento-producto').value || 0) : 0,
+                en_oferta: false,
+                descuento: 0,
                 imagen: document.getElementById('imagen-producto').value,
                 preguntas: []
             };
@@ -889,18 +896,15 @@
                 return;
             }
 
-            cargarTiendasDesdeAPI(); 
-            verificarTiendaCreador();
-            mostrarToast('Producto publicado.');
+            await cargarTiendasDesdeAPI();
+            mostrarToast('Producto publicado en tu tienda.');
             document.getElementById('form-crear-producto').reset();
-            document.getElementById('campos-oferta').classList.add('hidden');
         }
 
         async function eliminarProductoCreador(prodId) {
             let { error } = await supabase.from('productos').delete().eq('id', prodId);
             if(!error) {
-                cargarTiendasDesdeAPI(); 
-                verificarTiendaCreador();
+                await cargarTiendasDesdeAPI();
                 mostrarToast('Producto eliminado.');
             }
         }
@@ -927,24 +931,37 @@
 
         function actualizarDashboardCreador() {
             if(!usuarioSesion || usuarioSesion.rol !== 'creador') return;
-            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
-            if(!tp) return;
+            let misTiendas = backendTiendasDB.filter(t => t.ownerEmail === usuarioSesion.email);
 
-            let misVentas = ventasDB.filter(v => v.tiendaNombre === tp.nombre);
-            let totalIngresos = misVentas.reduce((acc, v) => acc + v.total, 0);
+            // Poblar selector de tiendas para agregar productos
+            let selectTienda = document.getElementById('select-tienda-producto');
+            if(selectTienda) {
+                selectTienda.innerHTML = '<option value="">Selecciona tu Tienda...</option>' + misTiendas.map(t => `<option value="${t.id}">${t.nombre} (${t.localidad})</option>`).join('');
+            }
+
+            let totalIngresos = 0;
+            misTiendas.forEach(t => {
+                let misVentas = ventasDB.filter(v => v.tiendaNombre === t.nombre);
+                totalIngresos += misVentas.reduce((acc, v) => acc + v.total, 0);
+            });
+
             document.getElementById('creator-fin-ventas').innerText = formatCLP(totalIngresos);
             document.getElementById('creator-fin-ordenes').innerText = pedidosDB.filter(o => o.tiendaOwner === usuarioSesion.email && o.estado === 'Pendiente de Envío').length;
 
             let invContainer = document.getElementById('creator-my-products');
-            invContainer.innerHTML = tp.productos.length ? tp.productos.map(p => `
-                <div class="flex justify-between items-center bg-white p-2 rounded border">
-                    <div>
-                        <b class="text-slate-900">${p.nombre}</b><br>
-                        <span class="text-gray-500">${formatCLP(calcularPrecioFinal(p))} • Stock: <b>${p.stock}</b></span>
+            invContainer.innerHTML = misTiendas.length ? misTiendas.map(t => `
+                <div class="mb-3 bg-white p-2 rounded border">
+                    <b class="text-blue-600">${t.nombre}</b> <span class="text-[10px] text-gray-400">(${t.localidad})</span>
+                    <div class="mt-1 space-y-1">
+                        ${t.productos.length ? t.productos.map(p => `
+                            <div class="flex justify-between items-center bg-slate-50 p-1.5 rounded text-[11px]">
+                                <span>${p.nombre} - ${formatCLP(calcularPrecioFinal(p))} (Stock: ${p.stock})</span>
+                                <button onclick="eliminarProductoCreador(${p.id})" class="text-red-600 font-bold hover:underline">Eliminar</button>
+                            </div>
+                        `).join('') : '<p class="text-gray-400 text-[11px]">Sin productos en esta tienda.</p>'}
                     </div>
-                    <button onclick="eliminarProductoCreador(${p.id})" class="text-red-600 font-bold hover:underline">Eliminar</button>
                 </div>
-            `).join('') : '<p class="text-gray-400">No tienes productos.</p>';
+            `).join('') : '<p class="text-gray-400">No tienes tiendas registradas todavía.</p>';
 
             let ordContainer = document.getElementById('creator-my-orders');
             let misPedidos = pedidosDB.filter(o => o.tiendaOwner === usuarioSesion.email);
