@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartMall Chile - Ecosistema Oficial Supabase</title>
+    <title>SmartMall Chile - Ecosistema Supabase Oficial</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -52,7 +52,7 @@
                 </div>
             </div>
 
-            <!-- Botones de Acción -->
+            <!-- Botones de Acción Diferenciados -->
             <div class="flex items-center gap-3">
                 <button onclick="toggleCart()" class="relative bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-xl flex items-center gap-2 text-sm transition border border-slate-700">
                     <i class="fa-solid fa-cart-shopping text-amber-400"></i>
@@ -67,9 +67,16 @@
                     </div>
                 </div>
 
-                <button onclick="abrirModalAuth('login')" id="btn-login-open" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-2 rounded-lg text-xs shadow flex items-center gap-1">
-                    <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                <!-- Botón Clientes -->
+                <button onclick="abrirModalAuth('cliente')" id="btn-login-cliente" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-2 rounded-lg text-xs shadow flex items-center gap-1">
+                    <i class="fa-solid fa-user"></i> Ingreso Clientes
                 </button>
+
+                <!-- Botón Creadores -->
+                <button onclick="abrirModalAuth('creador')" id="btn-login-creador" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold px-3 py-2 rounded-lg text-xs shadow flex items-center gap-1 border border-amber-400/40">
+                    <i class="fa-solid fa-store"></i> Acceso Creadores
+                </button>
+
                 <button onclick="cerrarSesion()" id="btn-logout" class="hidden bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs">
                     Salir
                 </button>
@@ -93,7 +100,7 @@
             <button onclick="aplicarCuponBienvenidaBanner()" class="bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs shadow">Usar Cupón</button>
         </section>
 
-        <!-- SECCIÓN DE PLANES Y SUSCRIPCIONES PARA CREADORES -->
+        <!-- SECCIÓN DE PLANES Y SUSCRIPCIONES -->
         <div id="vista-planes-suscripcion" class="hidden bg-white rounded-2xl shadow-md p-8 mb-8 border border-amber-200">
             <div class="text-center max-w-2xl mx-auto mb-8">
                 <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Membresías para Tiendas</span>
@@ -102,7 +109,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                <!-- PLAN EMPRENDEDOR -->
                 <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 flex flex-col justify-between hover:border-amber-400 transition shadow-sm">
                     <div>
                         <div class="flex justify-between items-center mb-4">
@@ -114,13 +120,11 @@
                             <li><i class="fa-solid fa-check text-emerald-600 mr-2"></i> 1 Tienda registrada en red oficial</li>
                             <li><i class="fa-solid fa-check text-emerald-600 mr-2"></i> Hasta 25 productos en inventario</li>
                             <li><i class="fa-solid fa-check text-emerald-600 mr-2"></i> Emisión de boletas electrónicas PDF</li>
-                            <li><i class="fa-solid fa-check text-emerald-600 mr-2"></i> Soporte técnico por tickets</li>
                         </ul>
                     </div>
                     <button onclick="seleccionarPlanCreador('Emprendedor')" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-sm shadow">Seleccionar Emprendedor</button>
                 </div>
 
-                <!-- PLAN FULL -->
                 <div class="bg-gradient-to-b from-amber-50/50 to-white border-2 border-amber-500 rounded-2xl p-6 flex flex-col justify-between shadow-md relative overflow-hidden">
                     <span class="absolute top-3 right-3 bg-amber-500 text-slate-950 font-black text-[10px] uppercase px-2.5 py-0.5 rounded-full">Más Popular</span>
                     <div>
@@ -132,7 +136,6 @@
                         <ul class="space-y-3 text-sm text-slate-700 mb-6">
                             <li><i class="fa-solid fa-check text-emerald-600 mr-2"></i> <b>Múltiples Tiendas</b> en red oficial</li>
                             <li><i class="fa-solid fa-check text-emerald-600 mr-2"></i> Productos ilimitados y sin restricciones</li>
-                            <li><i class="fa-solid fa-check text-emerald-600 mr-2"></i> Prioridad alta en buscador y categorías</li>
                             <li><i class="fa-solid fa-check text-emerald-600 mr-2"></i> Soporte VIP 24/7 y Estadísticas GMV</li>
                         </ul>
                     </div>
@@ -335,20 +338,21 @@
                 <h3 id="auth-title" class="text-xl font-bold text-slate-900">Iniciar Sesión</h3>
             </div>
             
+            <!-- FORMULARIO LOGIN (CLIENTES / CREADORES / ADMIN) -->
             <form id="form-login" onsubmit="procesarLogin(event)" class="space-y-3">
-                <div class="bg-amber-50 p-2.5 rounded-lg text-[11px] text-amber-900 text-center mb-2 border border-amber-200">
-                    <b>Credenciales de Prueba:</b><br>
-                    • Admin: <b>admin@smartmall.cl</b> / 1234<br>
-                    • Creador Tienda: <b>creador@smartmall.cl</b> / 1234
+                <div id="login-info-box" class="bg-amber-50 p-2.5 rounded-lg text-[11px] text-amber-900 text-center mb-2 border border-amber-200">
+                    <b>Acceso Seguro SmartMall</b><br>
+                    Ingrese sus credenciales correspondientes.
                 </div>
                 <input type="email" id="login-email" required placeholder="correo@ejemplo.cl" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
                 <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
                 <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl text-sm shadow">Entrar</button>
-                <div class="text-center pt-2">
-                    <button type="button" onclick="cambiarModoAuth('registro')" class="text-xs text-blue-600 hover:underline">¿No tienes cuenta? Regístrate aquí</button>
+                <div id="div-link-registro" class="text-center pt-2">
+                    <button type="button" onclick="cambiarModoAuth('registro')" class="text-xs text-blue-600 hover:underline">¿No tienes cuenta de cliente? Regístrate aquí</button>
                 </div>
             </form>
 
+            <!-- FORMULARIO REGISTRO -->
             <form id="form-registro" onsubmit="procesarRegistroClienteReal(event)" class="space-y-3 hidden">
                 <input type="text" id="reg-nombre" required placeholder="Tu nombre completo" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
                 <input type="email" id="reg-email" required placeholder="correo@ejemplo.cl" class="w-full bg-slate-50 border rounded-xl p-2.5 text-sm">
@@ -427,6 +431,10 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             try {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('admin') === 'true') {
+                    abrirModalAuth('admin');
+                }
                 poblarDatalistsCiudades();
                 cargarTiendasDesdeAPI();
                 actualizarCarritoUI();
@@ -750,12 +758,28 @@
             if(usuarioSesion && usuarioSesion.rol === 'admin') document.getElementById('admin-dashboard').classList.remove('hidden');
         }
 
-        function abrirModalAuth(m) {
+        function abrirModalAuth(tipo) {
             document.getElementById('auth-modal').classList.remove('hidden');
-            if(m === 'login') {
-                document.getElementById('auth-title').innerText = 'Iniciar Sesión';
+            const infoBox = document.getElementById('login-info-box');
+            
+            if(tipo === 'cliente') {
+                document.getElementById('auth-title').innerText = 'Ingreso de Clientes';
+                infoBox.innerHTML = 'Accede para gestionar tus compras y boletas.';
                 document.getElementById('form-login').classList.remove('hidden');
                 document.getElementById('form-registro').classList.add('hidden');
+                document.getElementById('div-link-registro').classList.remove('hidden');
+            } else if(tipo === 'creador') {
+                document.getElementById('auth-title').innerText = 'Acceso de Creadores y Tiendas';
+                infoBox.innerHTML = 'Ingresa con tu cuenta de creador para administrar tu inventario.';
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-registro').classList.add('hidden');
+                document.getElementById('div-link-registro').classList.add('hidden');
+            } else if(tipo === 'admin') {
+                document.getElementById('auth-title').innerText = 'Acceso Restringido - Administrador';
+                infoBox.innerHTML = 'Panel exclusivo de supervisión general.';
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-registro').classList.add('hidden');
+                document.getElementById('div-link-registro').classList.add('hidden');
             } else {
                 document.getElementById('auth-title').innerText = 'Registro en SmartMall';
                 document.getElementById('form-login').classList.add('hidden');
@@ -857,7 +881,6 @@
             usuarioSesion.plan = nombrePlan;
             localStorage.setItem('smartmall_sesion', JSON.stringify(usuarioSesion));
             
-            // Actualizar metadatos en Supabase si es posible
             try {
                 await supabase.auth.updateUser({ data: { plan: nombrePlan } });
             } catch(e) { console.error(e); }
@@ -870,7 +893,8 @@
             usuarioSesion = null;
             localStorage.removeItem('smartmall_sesion');
             document.getElementById('user-badge').classList.add('hidden');
-            document.getElementById('btn-login-open').classList.remove('hidden');
+            document.getElementById('btn-login-cliente').classList.remove('hidden');
+            document.getElementById('btn-login-creador').classList.remove('hidden');
             document.getElementById('btn-logout').classList.add('hidden');
             document.getElementById('creator-dashboard').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.add('hidden');
@@ -883,7 +907,8 @@
 
         function aplicarEstadoSesion(u) {
             document.getElementById('user-badge').classList.remove('hidden');
-            document.getElementById('btn-login-open').classList.add('hidden');
+            document.getElementById('btn-login-cliente').classList.add('hidden');
+            document.getElementById('btn-login-creador').classList.add('hidden');
             document.getElementById('btn-logout').classList.remove('hidden');
             document.getElementById('role-name').innerText = u.nombre;
             document.getElementById('sub-status').innerText = `Rol: ${u.rol.toUpperCase()}`;
@@ -951,43 +976,41 @@
         }
 
         async function apiCrearProductoCreador(e) {
-    e.preventDefault();
-    
-    // Buscar la tienda que pertenece al correo actual del creador en la base de datos cargada
-    let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
-    
-    if(!tp) {
-        mostrarToast('Primero debes guardar o registrar tu tienda en el formulario de la izquierda.', 'error');
-        return;
-    }
+            e.preventDefault();
+            let tp = backendTiendasDB.find(t => t.ownerEmail === usuarioSesion.email);
+            if(!tp) { 
+                mostrarToast('Primero debes guardar o registrar tu tienda en el formulario de la izquierda.', 'error'); 
+                return; 
+            }
 
-    let enOferta = document.getElementById('check-oferta').checked;
-    let nuevoProdDB = {
-        tienda_id: parseInt(tp.id),
-        nombre: document.getElementById('nombre-producto').value.trim(),
-        descripcion: document.getElementById('desc-producto').value.trim(),
-        precio: parseInt(document.getElementById('precio-producto').value),
-        stock: parseInt(document.getElementById('stock-producto').value),
-        categoria: document.getElementById('categoria-producto').value,
-        en_oferta: enOferta,
-        descuento: enOferta ? parseInt(document.getElementById('descuento-producto').value || 0) : 0,
-        imagen: document.getElementById('imagen-producto').value.trim(),
-        preguntas: []
-    };
+            let enOferta = document.getElementById('check-oferta').checked;
+            let nuevoProdDB = {
+                tienda_id: parseInt(tp.id),
+                nombre: document.getElementById('nombre-producto').value.trim(),
+                descripcion: document.getElementById('desc-producto').value.trim(),
+                precio: parseInt(document.getElementById('precio-producto').value),
+                stock: parseInt(document.getElementById('stock-producto').value),
+                categoria: document.getElementById('categoria-producto').value,
+                en_oferta: enOferta,
+                descuento: enOferta ? parseInt(document.getElementById('descuento-producto').value || 0) : 0,
+                imagen: document.getElementById('imagen-producto').value.trim(),
+                preguntas: []
+            };
 
-    let { error } = await supabase.from('productos').insert([nuevoProdDB]);
-    if(error) {
-        console.error("Error Supabase:", error.message);
-        mostrarToast('Error al publicar producto: ' + error.message, 'error');
-        return;
-    }
+            let { error } = await supabase.from('productos').insert([nuevoProdDB]);
+            if(error) {
+                console.error("Error Supabase:", error.message);
+                mostrarToast('Error al publicar producto: ' + error.message, 'error');
+                return;
+            }
 
-    await cargarTiendasDesdeAPI(); 
-    verificarTiendaCreador();
-    mostrarToast('¡Producto publicado con éxito!');
-    document.getElementById('form-crear-producto').reset();
-    document.getElementById('campos-oferta').classList.add('hidden');
-}
+            await cargarTiendasDesdeAPI(); 
+            verificarTiendaCreador();
+            mostrarToast('¡Producto publicado con éxito!');
+            document.getElementById('form-crear-producto').reset();
+            document.getElementById('campos-oferta').classList.add('hidden');
+        }
+
         async function eliminarProductoCreador(prodId) {
             let { error } = await supabase.from('productos').delete().eq('id', prodId);
             if(!error) {
@@ -1199,7 +1222,7 @@
             if(!usuarioSesion || usuarioSesion.rol !== 'cliente') {
                 mostrarToast('Debes iniciar sesión como cliente.', 'error');
                 toggleCart();
-                abrirModalAuth('login');
+                abrirModalAuth('cliente');
                 return;
             }
             if(carrito.length === 0) { mostrarToast('El carrito está vacío.', 'error'); return; }
@@ -1227,7 +1250,7 @@
         }
 
         function abrirPortalCliente() {
-            if(!usuarioSesion || usuarioSesion.rol !== 'cliente') { abrirModalAuth('login'); return; }
+            if(!usuarioSesion || usuarioSesion.rol !== 'cliente') { abrirModalAuth('cliente'); return; }
             document.getElementById('vista-catalogo').classList.add('hidden');
             document.getElementById('products-section').classList.add('hidden');
             document.getElementById('vista-detalle-producto').classList.add('hidden');
